@@ -32,7 +32,8 @@
     -webkit-text-size-adjust:100%;
   }
   ::selection{ background:var(--blue); color:#fff; }
-  #shell{ width:100%; max-width:480px; margin:0 auto; min-height:100vh; padding-bottom:96px; position:relative; }
+  #topbar{ position:fixed; top:0; left:0; right:0; height:env(safe-area-inset-top); background:#0A0D12; z-index:200; pointer-events:none; }
+  #shell{ width:100%; max-width:480px; margin:0 auto; min-height:100vh; padding-bottom:96px; padding-top:calc(env(safe-area-inset-top) + 8px); position:relative; }
   #app{ padding:0; }
   .scr{ animation:fade .35s ease; padding:20px 16px 8px; }
   @keyframes fade{ from{opacity:0} to{opacity:1} }
@@ -104,6 +105,7 @@
 </style>
 </head>
 <body>
+<div id="topbar"></div>
 <div id="shell">
   <div id="app"></div>
 </div>
@@ -680,7 +682,10 @@ function exerciseCard(ex,ei,dayId,pr){
     '</div>'+
     '<div class="trow" style="margin-top:12px;padding-bottom:4px"><div class="col">SET</div><div class="col">PREV</div><div class="col">'+colHead+'</div><div class="col">REPS</div><div class="col"></div></div>'+
     rows+
-    '<div class="tap disp" data-act="addset" data-ei="'+ei+'" style="margin-top:10px;text-align:center;font-size:12.5px;color:var(--blue);font-weight:600;letter-spacing:1px">+ ADD SET</div>'+
+    '<div class="row" style="margin-top:10px;justify-content:space-between;align-items:center">'+
+      '<div class="tap disp" data-act="addset" data-ei="'+ei+'" style="font-size:12.5px;color:var(--blue);font-weight:600;letter-spacing:1px">+ ADD SET</div>'+
+      (ex.sets.length>1?'<div class="tap disp" data-act="removeset" data-ei="'+ei+'" style="font-size:12px;color:var(--mut);font-weight:600;letter-spacing:.5px">− REMOVE LAST</div>':'')+
+    '</div>'+
   '</div>';
 }
 
@@ -1123,6 +1128,12 @@ document.addEventListener("click", function(e){
     var ei2=+t.getAttribute("data-ei");
     state.active.exercises[ei2].sets.push({weight:"",reps:"",done:false});
     save(); render(); return;
+  }
+  if(act==="removeset"){
+    var eri=+t.getAttribute("data-ei");
+    var sets=state.active.exercises[eri].sets;
+    if(sets.length>1){ sets.pop(); save(); render(); }
+    return;
   }
   if(act==="togglecl"){
     var kind=t.getAttribute("data-kind"), id=t.getAttribute("data-id");
