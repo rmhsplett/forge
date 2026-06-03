@@ -606,7 +606,7 @@ function renderWorkout(){
   }
 
   return '<div class="scr" style="padding:0 14px 8px">'+
-    '<div style="position:fixed;top:calc(env(safe-area-inset-top) + 2px);left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:50;background:var(--bg);border-bottom:1px solid var(--line2);padding:10px 16px 9px">'+
+    '<div style="position:fixed;top:env(safe-area-inset-top);left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:50;background:var(--bg);border-bottom:1px solid var(--line2);padding:10px 16px 9px">'+
       '<div class="row" style="align-items:center;justify-content:space-between">'+
         '<div><div style="font-size:10px;color:var(--mut);letter-spacing:1.5px">'+fmtDate(a.date,{weekday:"long",day:"numeric",month:"long"}).toUpperCase()+'</div>'+
         '<div class="disp" style="font-size:24px;font-weight:700;line-height:1.1">'+a.name+'</div></div>'+
