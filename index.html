@@ -503,7 +503,7 @@ function computeStats(){
     var firstDate = Math.min.apply(null, dates);
     programWeek = Math.floor((t - firstDate) / (7 * DAY_MS)) + 1;
   }
-  return { total:state.history.length, thisWeek:thisWeek, streak:programWeek };
+  return { total:progSessions.length, thisWeek:thisWeek, streak:programWeek };
 }
 function computePRs(){
   var m={};
