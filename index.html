@@ -129,6 +129,7 @@ var META = {
   "Flat DB Press":{muscle:"Chest",disp:"kg"},
   "Incline DB Press":{muscle:"Chest",disp:"kg"},
   "Machine Chest Press":{muscle:"Chest",disp:"kg"},
+  "Machine Bench Press":{muscle:"Chest",disp:"kg"},
   "Pec Deck":{muscle:"Chest",disp:"kg"},
   "Weighted Pull-Ups":{muscle:"Back",disp:"band",band:"Purple"},
   "Weighted Chin-Ups":{muscle:"Back",disp:"band",band:"Purple"},
@@ -157,7 +158,14 @@ var META = {
   "Weighted Dips":{muscle:"Triceps",disp:"plus"},
   "Rope Pushdown":{muscle:"Triceps",disp:"kg"},
   "Hanging Leg Raise":{muscle:"Core",disp:"bw"},
-  "Cable Crunch":{muscle:"Core",disp:"kg"}
+  "Cable Crunch":{muscle:"Core",disp:"kg"},
+  "Narrow Grip Cable Row":{muscle:"Back",disp:"kg"},
+  "Cable Bicep Curl":{muscle:"Biceps",disp:"kg"},
+  "Single Arm Preacher Curl":{muscle:"Biceps",disp:"kg"},
+  "Shoulder Press Machine":{muscle:"Shoulders",disp:"kg"},
+  "Barbell Squat":{muscle:"Legs",disp:"bar"},
+  "Straight Bar Cable Pushdown":{muscle:"Triceps",disp:"kg"},
+  "Lat Pulldown Machine":{muscle:"Back",disp:"kg"}
 };
 
 /* rep ranges keyed per day-slot so same exercise can differ across days */
@@ -253,6 +261,89 @@ var COOLDOWN = [
 ];
 var MUSCLE_ORDER = ["Chest","Back","Legs","Shoulders","Biceps","Triceps","Core"];
 
+/* ============================ PROGRAM 2: CHEST & BICEP FOCUS ============================ */
+var DAYS_CB = [
+  { id:"cb1", name:"Upper A — Heavy", focus:"Deadlift · Chest · Back", tag:"UPPER",
+    exercises:[
+      {name:"Deadlift",sets:3},{name:"Machine Bench Press",sets:3},
+      {name:"Lat Pulldown Machine",sets:3},{name:"Incline DB Press",sets:2},
+      {name:"Cable Bicep Curl",sets:2},{name:"Straight Bar Cable Pushdown",sets:2}
+    ]},
+  { id:"cb2", name:"Legs", focus:"Quads · Hamstrings · Core", tag:"LOWER",
+    exercises:[
+      {name:"Barbell Squat",sets:3},{name:"Romanian Deadlift",sets:3},
+      {name:"Hack Squat",sets:2},{name:"Seated Leg Curl",sets:3},
+      {name:"Hanging Leg Raise",sets:3}
+    ]},
+  { id:"cb3", name:"Upper B — Volume", focus:"Chest · Back · Biceps", tag:"UPPER",
+    exercises:[
+      {name:"Incline Barbell Press",sets:3},{name:"Narrow Grip Cable Row",sets:3},
+      {name:"Machine Chest Press",sets:3},{name:"Chest Supported Row",sets:2},
+      {name:"Rear Delt Fly (Pec-Deck)",sets:3},{name:"Single Arm Preacher Curl",sets:3}
+    ]},
+  { id:"cb4", name:"Shoulders & Arms", focus:"Shoulders · Biceps · Triceps", tag:"ARMS",
+    exercises:[
+      {name:"Shoulder Press Machine",sets:3},{name:"Cable Lateral Raise",sets:4},
+      {name:"Rear Delt Fly (DB)",sets:3},{name:"Cable Bicep Curl",sets:3},
+      {name:"Single Arm Preacher Curl",sets:2},{name:"Weighted Dips",sets:3},
+      {name:"Rope Pushdown",sets:2}
+    ]}
+];
+var REP_RANGES_CB = {
+  cb1:{
+    "Deadlift":"4–6","Machine Bench Press":"6–8","Lat Pulldown Machine":"8–10",
+    "Incline DB Press":"10–12","Cable Bicep Curl":"12–15","Straight Bar Cable Pushdown":"12–15"
+  },
+  cb2:{
+    "Barbell Squat":"6–8","Romanian Deadlift":"8–10","Hack Squat":"10–12",
+    "Seated Leg Curl":"10–12","Hanging Leg Raise":"12–15"
+  },
+  cb3:{
+    "Incline Barbell Press":"6–8","Narrow Grip Cable Row":"8–10","Machine Chest Press":"10–12",
+    "Chest Supported Row":"10–12","Rear Delt Fly (Pec-Deck)":"12–15",
+    "Single Arm Preacher Curl":"10–12"
+  },
+  cb4:{
+    "Shoulder Press Machine":"8–10","Cable Lateral Raise":"12–15","Rear Delt Fly (DB)":"12–15",
+    "Cable Bicep Curl":"12–15","Single Arm Preacher Curl":"10–12",
+    "Weighted Dips":"6–8","Rope Pushdown":"10–12"
+  }
+};
+var WARMUP_CB = {
+  cb1:[
+    {id:"wu1",label:"5 min bike or rower — easy build",note:"RPE 5–6"},
+    {id:"wu2",label:"Hip circles + leg swings",note:"10 / side"},
+    {id:"wu3",label:"Ankle dorsiflexion wall drill",note:"10 reps / side"},
+    {id:"wu4",label:"Empty bar Romanian deadlift — groove the hinge",note:"2 × 10"},
+    {id:"wu5",label:"Band pull-aparts — prime upper back",note:"2 × 15"},
+    {id:"wu6",label:"2 ramp-up sets — Deadlift",note:"~50% & ~70%"}
+  ],
+  cb2:[
+    {id:"wu1",label:"5 min bike — loosen hips and ankles",note:"RPE 4–5"},
+    {id:"wu2",label:"Hip circles",note:"10 each direction"},
+    {id:"wu3",label:"Ankle dorsiflexion wall drill",note:"10 reps / side"},
+    {id:"wu4",label:"Banded clamshells — glute activation",note:"2 × 15 / side"},
+    {id:"wu5",label:"Goblet squat hold — sit into depth",note:"2 × 30 sec"},
+    {id:"wu6",label:"2 ramp-up sets — Barbell Squat",note:"~50% & ~70%"}
+  ],
+  cb3:[
+    {id:"wu1",label:"5 min row or bike",note:"RPE 5–6"},
+    {id:"wu2",label:"Shoulder circles — forward then backward",note:"10 each direction"},
+    {id:"wu3",label:"Band pull-aparts",note:"2 × 15"},
+    {id:"wu4",label:"Scapular wall slides",note:"2 × 10 slow"},
+    {id:"wu5",label:"Dead hang",note:"2 × 20 sec"},
+    {id:"wu6",label:"2 ramp-up sets — Incline Barbell Press",note:"~50% & ~70%"}
+  ],
+  cb4:[
+    {id:"wu1",label:"5 min light bike",note:"RPE 4–5"},
+    {id:"wu2",label:"Neck rolls + chin tucks",note:"10 reps each"},
+    {id:"wu3",label:"Shoulder CARs — slow controlled rotation",note:"5 / side"},
+    {id:"wu4",label:"Band pull-aparts",note:"2 × 15"},
+    {id:"wu5",label:"Light cable lateral raise — prime medial delts",note:"2 × 15"},
+    {id:"wu6",label:"2 ramp-up sets — Shoulder Press Machine",note:"~50% & ~70%"}
+  ]
+};
+
 /* ============================ PROGRAM REGISTRY ============================
    To add a new program: define its days, warmup, repRanges and prLifts,
    add an entry here, then add its id to PROGRAM_ORDER.
@@ -268,11 +359,15 @@ var PROGRAMS = {
     repRanges:REP_RANGES,
     prLifts:["Deadlift","Incline Barbell Press","Squat"]
   },
-  "slot2":{
-    id:"slot2",
-    name:"Program 2",
-    description:"Not yet defined",
-    placeholder:true
+  "chestbicep":{
+    id:"chestbicep",
+    name:"Chest & Bicep Focus",
+    description:"Chest · Back · Bicep emphasis · 4 sessions/week",
+    placeholder:false,
+    days:DAYS_CB,
+    warmup:WARMUP_CB,
+    repRanges:REP_RANGES_CB,
+    prLifts:["Deadlift","Incline Barbell Press","Barbell Squat"]
   },
   "slot3":{
     id:"slot3",
@@ -281,7 +376,7 @@ var PROGRAMS = {
     placeholder:true
   }
 };
-var PROGRAM_ORDER = ["hypertrophy4","slot2","slot3"];
+var PROGRAM_ORDER = ["hypertrophy4","chestbicep","slot3"];
 function currentProgram(){ return PROGRAMS[state.programId] || PROGRAMS["hypertrophy4"]; }
 
 var REAL = [
@@ -388,25 +483,27 @@ function fmtDate(ms,opts){ return new Date(ms).toLocaleDateString("en-GB", opts|
 function targetDate(){ var d=new Date(); d.setMonth(d.getMonth()+GOAL.months); return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"}); }
 function latestWeight(){ if(!state.weights.length) return null; return state.weights.slice().sort(function(a,b){return b.date-a.date;})[0]; }
 function computeStats(){
-  var dates = state.history.map(function(h){return h.date;});
+  var prog = currentProgram();
+  var programDayIds = prog.days.map(function(d){return d.id;});
+  /* only sessions belonging to the active program */
+  var progSessions = state.history.filter(function(h){
+    return programDayIds.indexOf(h.dayId) !== -1;
+  });
+  var dates = progSessions.map(function(h){return h.date;});
   var t = Date.now();
-  /* Sunday midnight of the current week */
+  /* this week: Sun–Sat calendar window */
   var now = new Date();
   var weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
   weekStart.setHours(0,0,0,0);
   var weekStartMs = weekStart.getTime();
   var thisWeek = dates.filter(function(d){return d >= weekStartMs;}).length;
-  /* week streak: count consecutive calendar weeks (Sun–Sat) back from current with ≥1 session */
-  var streak=0, k=0;
-  while(k<520){
-    var wEnd   = weekStartMs - k * 7 * DAY_MS;
-    var wStart = wEnd - 7 * DAY_MS;
-    /* include current week in streak */
-    var winStart = k===0 ? weekStartMs : wStart;
-    var winEnd   = k===0 ? t+1        : wEnd;
-    if(dates.some(function(d){return d>=winStart && d<winEnd;})){ streak++; k++; } else break;
+  /* program week: weeks elapsed since first session on this plan — never resets */
+  var programWeek = 0;
+  if(dates.length > 0){
+    var firstDate = Math.min.apply(null, dates);
+    programWeek = Math.floor((t - firstDate) / (7 * DAY_MS)) + 1;
   }
-  return { total:state.history.length, thisWeek:thisWeek, streak:streak };
+  return { total:state.history.length, thisWeek:thisWeek, streak:programWeek };
 }
 function computePRs(){
   var m={};
@@ -462,7 +559,7 @@ function renderDashboard(){
   var lost=Math.max(0, GOAL.start-current);
   var pct=Math.max(0,Math.min(100,(lost/span)*100));
   var statBoxes=[
-    {v:st.streak,l:"Week Streak",suf:"wk"},
+    {v:st.streak,l:"Program Week",suf:"wk"},
     {v:st.thisWeek,l:"This Week",suf:"/ 4"},
     {v:st.total,l:"Total Sessions",suf:""}
   ];
@@ -1040,7 +1137,8 @@ function tickRest(){
 /* ============================ ACTIONS ============================ */
 function startDay(dayId){
   var prog=currentProgram();
-  var day=prog.days.find(function(d){return d.id===dayId;})||DAY_BY_ID[dayId];
+  var day=prog.days.find(function(d){return d.id===dayId;}) || DAY_BY_ID[dayId];
+  if(!day) return;
   var prevSession=state.history.find(function(h){return h.dayId===dayId;})||null;
   var prevMap={}; if(prevSession) prevSession.exercises.forEach(function(e){ prevMap[e.name]=e; });
   var wu=prog.warmup[dayId]||prog.warmup[Object.keys(prog.warmup)[0]]||[];
