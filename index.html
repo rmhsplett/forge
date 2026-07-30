@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
-<head>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a0a0a">
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -1306,6 +1307,15 @@ document.addEventListener("visibilitychange", function(){ if(!document.hidden) t
 /* ============================ BOOT ============================ */
 load();
 render();
+</script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/forge/sw.js')
+        .then(reg => console.log('SW registered:', reg.scope))
+        .catch(err => console.error('SW failed:', err));
+    });
+  }
 </script>
 </body>
 </html>
