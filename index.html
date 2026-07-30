@@ -1308,5 +1308,14 @@ document.addEventListener("visibilitychange", function(){ if(!document.hidden) t
 load();
 render();
 </script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/forge/sw.js')
+        .then(reg => console.log('SW registered:', reg.scope))
+        .catch(err => console.error('SW failed:', err));
+    });
+  }
+</script>
 </body>
 </html>
