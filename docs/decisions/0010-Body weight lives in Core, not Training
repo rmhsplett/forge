@@ -1,0 +1,28 @@
+# ADR 0010: Body weight tracking lives in the Core module
+
+**Date:** 2026-08-02
+**Status:** Accepted
+
+## Context
+Body weight is needed by both Training (progress tracking, PR 
+bodyweight scaling) and Nutrition (TDEE calculation, trend for 
+cut/bulk). It doesn't belong exclusively to either module.
+
+## Decision
+`BodyWeightEntry` and related services live in the Core module. 
+Both Training and Nutrition read from the same source of truth.
+
+## Alternatives considered
+- **Duplicate in each module:** Would create sync problems and 
+  double the HealthKit integration surface.
+- **Nutrition owns it:** Nutrition is deferred; Training needs it 
+  in v1.
+
+## Consequences
+- Nutrition module (when built) inherits body weight data with 
+  zero migration.
+- HealthKit body-mass integration lives in Core.
+
+## Related
+- ADR 0004 (modular structure)
+- ADR 0011 (HealthKit permissions)
