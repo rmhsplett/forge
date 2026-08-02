@@ -1,0 +1,27 @@
+# ADR 0005: Local notifications only, no backend
+
+**Date:** 2026-08-02
+**Status:** Accepted
+
+## Context
+FORGE needs notifications for rest timer completion, workout 
+reminders, and (potentially) PR celebrations. Remote push requires 
+a backend server; local notifications run entirely on-device.
+
+## Decision
+Use only local notifications (UNUserNotificationCenter). No backend.
+
+## Alternatives considered
+- **Remote push (APNs):** Requires server infrastructure, 
+  device-token management, and privacy manifest additions. No 
+  feature currently justifies the cost.
+
+## Consequences
+- Zero backend infrastructure for v1.
+- All notifications must be scheduled ahead of time or fired from 
+  a running app instance (including the Watch extension).
+- If a future feature requires cross-device or server-initiated 
+  notifications, this decision needs revisiting.
+
+## Related
+- ADR 0003 (Watch app)
