@@ -1,0 +1,29 @@
+# ADR 0012: Program schema versioning built in from v1
+
+**Date:** 2026-08-02
+**Status:** Accepted
+
+## Context
+Program structure will evolve over time — new prescription fields 
+(RIR targets, tempo, superset grouping), changes to rep range 
+representation, etc. Retrofitting version handling later is 
+expensive.
+
+## Decision
+Every `Program` entity has an integer `schemaVersion` field, set 
+at creation. The top-level JSON export has its own 
+`forge_version`. Both are used to trigger migrations when the app 
+encounters older data.
+
+## Alternatives considered
+- **Add versioning when first needed:** Guarantees a painful 
+  migration when the first breaking change happens.
+
+## Consequences
+- One-line field on Program adds negligible complexity.
+- Import layer can detect and migrate old exports.
+- SwiftData's own migration system handles storage-level schema 
+  changes; the version field handles semantic changes.
+
+## Related
+- ADR 0009 (PWA import)
