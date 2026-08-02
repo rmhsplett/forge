@@ -1,0 +1,42 @@
+# ADR 0006: Auto-suggestion uses Tier 2 double-progression
+
+**Date:** 2026-08-02
+**Status:** Accepted
+
+## Context
+The app should suggest next-session weights based on prior 
+performance, but the mechanism must be transparent, cheap to 
+build, and toggleable.
+
+## Decision
+Use double-progression logic:
+- If last session hit the top of the rep range on all working sets: 
+  suggest +increment (per-exercise setting, e.g. +2.5 kg compound, 
+  +1.25 kg isolation).
+- If last session hit at least the bottom of the range on all sets: 
+  suggest same weight, +1 rep target.
+- If last session missed the bottom: suggest same weight, repeat.
+
+Toggleable globally in Settings and per-exercise. Suggested values 
+appear pre-filled but always editable.
+
+Progression lookup is scoped to the current program 
+(programExercise-based). Ad-hoc exercises (programExercise == nil) 
+look up the Exercise's most recent LoggedExercise across all history.
+
+## Alternatives considered
+- **Tier 1 (show last session only, no suggestion):** Too passive.
+- **Tier 3 (RIR-based):** Requires per-set RIR logging discipline; 
+  can be added later.
+- **Tier 4 (e1RM stagnation detection):** Complements Tier 2 but is 
+  display/analytics, not a suggestion engine.
+
+## Consequences
+- Simple rule, easy to explain, matches natural progression logic.
+- Per-exercise increment field required on Exercise model.
+- e1RM display can be added later as an analytics view without 
+  affecting suggestion logic.
+
+## Related
+- ADR 0007 (data model)
+- ADR 0008 (ad-hoc exercises)
