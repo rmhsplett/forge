@@ -1,0 +1,35 @@
+# ADR 0008: Ad-hoc exercises via optional ProgramExercise reference
+
+**Date:** 2026-08-02
+**Status:** Accepted
+
+## Context
+Users may add an exercise to a session that was not prescribed by 
+that day's program template — e.g., adding Deadlift to Upper B if 
+it was skipped on Upper A. This should not modify the program 
+template but should still log full history for that exercise.
+
+## Decision
+`LoggedExercise.programExercise` is optional (nullable). If nil, 
+the LoggedExercise is ad-hoc; the program template is unaffected.
+
+Ad-hoc exercises may be visually marked in session history 
+("added this session") but are otherwise treated as normal logged 
+data.
+
+## Alternatives considered
+- **Force every LoggedExercise to have a ProgramExercise:** Would 
+  require synthetic ProgramExercises for ad-hoc adds, polluting 
+  the program template.
+- **Store ad-hoc exercises in a separate table:** Duplicates schema 
+  for no benefit; complicates history queries.
+
+## Consequences
+- Auto-suggestion for ad-hoc exercises falls back to Exercise-wide 
+  history (not program-scoped).
+- History queries "all Deadlifts I've ever done" work naturally 
+  regardless of ad-hoc vs prescribed origin.
+
+## Related
+- ADR 0006 (auto-suggestion scope)
+- ADR 0007 (data model split)
