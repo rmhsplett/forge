@@ -1,0 +1,29 @@
+# ADR 0011: HealthKit permissions requested lazily, per feature
+
+**Date:** 2026-08-02
+**Status:** Accepted
+
+## Context
+HealthKit requires separate permissions per data type (workouts, 
+body mass, heart rate, dietary energy, etc.). Requesting everything 
+upfront during onboarding is high-friction and gives users no 
+context for why permissions are being asked.
+
+## Decision
+Request each HealthKit permission at the point of first use for its 
+feature:
+- Workout permission when the user starts their first session.
+- Body mass read when the user first opens the body weight view.
+- Dietary permissions when Nutrition ships (v2).
+
+## Alternatives considered
+- **Upfront bulk request during onboarding:** Higher denial rate; 
+  users don't understand the ask.
+
+## Consequences
+- Every HealthKit-touching feature needs to handle "not authorised" 
+  as a state.
+- HealthKit denials are silent (API returns empty data). Empty 
+  states must handle "no data" and "denied" identically.
+- If denied, users must grant in iOS Settings; empty states should 
+  hint at this.
