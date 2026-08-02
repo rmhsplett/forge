@@ -1,0 +1,30 @@
+# ADR 0004: Modular folder structure (Core / Training / Nutrition)
+
+**Date:** 2026-08-02
+**Status:** Accepted
+
+## Context
+FORGE will ship with training features in v1 and nutrition features 
+later. Cross-cutting concerns (body weight, HealthKit, settings) 
+belong to neither module exclusively.
+
+## Decision
+Organise the Xcode project by folder into three top-level areas:
+- `Core/` — shared entities and services (BodyWeight, HealthKit 
+  wrapper, Settings, Notifications)
+- `Training/` — programs, sessions, logging, Watch integration
+- `Nutrition/` — meals, meal logging (stubs only in v1)
+
+Use folders, not Swift Package Manager modules. Migrating to SPM 
+modules later is possible if compile times or boundaries demand it.
+
+## Alternatives considered
+- **Flat structure:** Fine for tiny apps; becomes a mess quickly.
+- **SPM modules from day one:** Overengineered for a solo project; 
+  adds friction to every refactor.
+
+## Consequences
+- Clear namespacing from the start.
+- Body weight and HealthKit access sit in Core, shared by both 
+  modules.
+- Nutrition can be built without touching Training code.
