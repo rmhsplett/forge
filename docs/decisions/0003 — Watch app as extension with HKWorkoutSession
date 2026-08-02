@@ -1,0 +1,31 @@
+# ADR 0003: Watch app as companion extension using HKWorkoutSession
+
+**Date:** 2026-08-02
+**Status:** Accepted
+
+## Context
+FORGE needs Apple Watch functionality for rest timer haptics, HR 
+display, and set tracking during workouts. Full standalone Watch 
+logging (phone-optional) is not required.
+
+## Decision
+Ship the Watch app as a companion extension. When a workout begins 
+on the phone, the Watch starts its own HKWorkoutSession, which 
+replaces Apple Workout for the duration of the session.
+
+## Alternatives considered
+- **Standalone Watch app:** Higher dev cost; requires WatchConnectivity 
+  or CloudKit for full data model access; not needed for personal use.
+- **Notifications only (no HKWorkoutSession):** Cheaper but loses 
+  Activity ring integration, HR readings, and always-on display.
+
+## Consequences
+- Only one HKWorkoutSession can run at a time — FORGE replaces 
+  Apple Workout during sessions. Accepted trade-off.
+- Activity rings fill, HR writes to Health, workout appears in 
+  Fitness app — all handled by the OS.
+- Watch UI is minimal: current exercise, current set target, rest 
+  timer, HR display.
+
+## Related
+- ADR 0005 (local notifications)
