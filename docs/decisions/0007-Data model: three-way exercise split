@@ -1,0 +1,40 @@
+# ADR 0007: Three-way split: Exercise / ProgramExercise / LoggedExercise
+
+**Date:** 2026-08-02
+**Status:** Accepted
+
+## Context
+The app needs to represent (a) the definition of a movement, (b) 
+its prescription within a program, and (c) its performance in a 
+specific session. Collapsing these creates data integrity problems 
+across program edits and deletions.
+
+## Decision
+Model these as three separate entities:
+- `Exercise` — the movement itself. Persistent, shared across all 
+  programs. Contains muscle, equipment, defaults, progression 
+  increment.
+- `ProgramExercise` — the prescription within a ProgramDay. 
+  References an Exercise. Contains target sets and rep range.
+- `LoggedExercise` — the performance in a WorkoutSession. 
+  References an Exercise and optionally a ProgramExercise.
+
+## Alternatives considered
+- **Two-entity model (Program → Session):** Would either force 
+  destructive edits to program templates or lose exercise history 
+  when programs change.
+- **Single-table Exercise with embedded prescription and log data:** 
+  Impossible to reconcile with cross-program history.
+
+## Consequences
+- Exercise history spans all programs — trend charts and PRs are 
+  lifetime, not program-scoped.
+- Programs can be edited (rep ranges, exercise list) without 
+  affecting past sessions.
+- Deleting a program does not destroy session history.
+- Slightly more schema complexity — accepted for the data integrity 
+  guarantees.
+
+## Related
+- ADR 0006 (auto-suggestion scope)
+- ADR 0008 (ad-hoc exercises)
