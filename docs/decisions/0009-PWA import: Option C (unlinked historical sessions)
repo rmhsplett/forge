@@ -1,0 +1,37 @@
+# ADR 0009: PWA import uses Option C — sessions with no Program link
+
+**Date:** 2026-08-02
+**Status:** Accepted
+
+## Context
+The PWA JSON export contains session history and body weights but 
+no program definitions. Sessions carry only a `dayId` string 
+(e.g., "cb1", "day2") that hints at their program of origin.
+
+## Decision
+Import PWA sessions with `program = nil` and `programDay = nil` — 
+they exist as historical records without native Program links. 
+Programs are created fresh in the native app going forward.
+
+Import happens once at first launch. Re-import is not supported in 
+v1 (would require a wipe-and-restore flow).
+
+## Alternatives considered
+- **Option A: Reconstruct both programs from dayId groupings:** 
+  Requires inferring prescriptions (rep ranges, target sets) from 
+  incomplete data.
+- **Option B: Umbrella "Imported History" program:** Simpler than 
+  A but adds a synthetic entity for no user benefit.
+
+## Consequences
+- Cross-program history queries (e.g., Deadlift trend over all 
+  time) work fully.
+- Auto-suggestion on first native session correctly reads from PWA 
+  history via Exercise lookup.
+- Program-scoped filters ("progression during Chest & Bicep Focus") 
+  do not apply to pre-native sessions. Accepted trade-off.
+- New sessions logged in the native app link to native Programs 
+  normally.
+
+## Related
+- ADR 0007 (data model split)
