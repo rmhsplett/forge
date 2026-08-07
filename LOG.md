@@ -2,7 +2,9 @@
 
 Two lines per session: what I did, what's next. 
 Most recent entry at the top.
-
+## 2026-08-07
+- Xcode project created, folder structure set up, seed exercise library added
+- Next: write SwiftData models (Exercise, Program, ProgramDay, ProgramExercise, WorkoutSession, LoggedExercise, LoggedSet, BodyWeightEntry)
 ---
 
 ## 2026-08-02
