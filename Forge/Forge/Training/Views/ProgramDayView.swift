@@ -7,6 +7,11 @@ struct ProgramDayView: View {
 
     let day: ProgramDay
 
+    @Environment(\.modelContext) private var context
+
+    // Holds the session we just started so we can navigate into it.
+    @State private var activeSession: WorkoutSession?
+
     var body: some View {
         List {
             if !day.warmUpChecklist.isEmpty {
@@ -33,6 +38,19 @@ struct ProgramDayView: View {
         }
         .navigationTitle(day.name)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    activeSession = WorkoutSessionBuilder.startSession(from: day, in: context)
+                } label: {
+                    Label("Start Workout", systemImage: "play.fill")
+                }
+            }
+        }
+        // Pushes the live logging screen once a session has been created.
+        .navigationDestination(item: $activeSession) { session in
+            WorkoutSessionView(session: session)
+        }
     }
 
     private var sortedExercises: [ProgramExercise] {
