@@ -12,6 +12,47 @@
 import Foundation
 import SwiftData
 
+/// Which limb a set was performed with. `both` is the normal case (bilateral
+/// lifts, or when you don't care to split sides). `left` / `right` let you log
+/// each arm/leg separately for unilateral work like dumbbell curls, where one
+/// side is often stronger. String-backed + Codable like the other enums, and
+/// ordered Left/Both/Right to match the on-screen picker.
+enum SetSide: String, Codable, CaseIterable, Identifiable {
+    case left
+    case both
+    case right
+
+    var id: String { rawValue }
+
+    /// Full label for the picker.
+    var label: String {
+        switch self {
+        case .left: return "Left"
+        case .both: return "Both"
+        case .right: return "Right"
+        }
+    }
+
+    /// Compact badge shown on a set row (nil for `both`, which needs no badge).
+    var badge: String? {
+        switch self {
+        case .left: return "L"
+        case .both: return nil
+        case .right: return "R"
+        }
+    }
+
+    /// Secondary sort key so an L/R pair sharing one set number always
+    /// displays in a stable order: Left above Right.
+    var sortRank: Int {
+        switch self {
+        case .left: return 0
+        case .both: return 1
+        case .right: return 2
+        }
+    }
+}
+
 @Model
 final class LoggedSet {
 
@@ -22,6 +63,11 @@ final class LoggedSet {
 
     var weightKg: Double = 0
     var reps: Int = 0
+
+    /// Which side this set was performed with. Defaults to `.both`; existing
+    /// sets migrate to `.both` automatically (a defaulted attribute is a
+    /// lightweight SwiftData migration, no data loss).
+    var side: SetSide = SetSide.both
 
     /// Reps in reserve — subjective effort marker. Optional because it's
     /// fine to log a set without rating it.
@@ -49,6 +95,7 @@ final class LoggedSet {
         order: Int = 0,
         weightKg: Double = 0,
         reps: Int = 0,
+        side: SetSide = .both,
         rir: Int? = nil,
         isCompleted: Bool = false,
         completedAt: Date? = nil,
@@ -58,6 +105,7 @@ final class LoggedSet {
         self.order = order
         self.weightKg = weightKg
         self.reps = reps
+        self.side = side
         self.rir = rir
         self.isCompleted = isCompleted
         self.completedAt = completedAt

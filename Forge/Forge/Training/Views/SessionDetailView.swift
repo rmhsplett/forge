@@ -22,8 +22,15 @@ struct SessionDetailView: View {
                 Section(logged.exercise?.name ?? "Exercise") {
                     ForEach(sortedSets(of: logged)) { set in
                         HStack {
-                            Text("Set \(set.order + 1)")
-                                .foregroundStyle(.secondary)
+                            HStack(spacing: 6) {
+                                Text("Set \(set.order + 1)")
+                                if let badge = set.side.badge {
+                                    Text(badge)
+                                        .font(.caption2.bold())
+                                        .foregroundStyle(Color.accentColor)
+                                }
+                            }
+                            .foregroundStyle(.secondary)
                             Spacer()
                             if set.isCompleted {
                                 Text("\(set.weightKg.formatted(.number.precision(.fractionLength(0...1)))) kg × \(set.reps)")
@@ -47,7 +54,7 @@ struct SessionDetailView: View {
     }
 
     private func sortedSets(of logged: LoggedExercise) -> [LoggedSet] {
-        logged.sets.sorted { $0.order < $1.order }
+        logged.sets.sorted { ($0.order, $0.side.sortRank) < ($1.order, $1.side.sortRank) }
     }
 
     private func summaryRow(_ label: String, _ value: String) -> some View {

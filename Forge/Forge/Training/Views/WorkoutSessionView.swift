@@ -52,7 +52,7 @@ struct WorkoutSessionView: View {
     }
 
     private func sortedSets(of logged: LoggedExercise) -> [LoggedSet] {
-        logged.sets.sorted { $0.order < $1.order }
+        logged.sets.sorted { ($0.order, $0.side.sortRank) < ($1.order, $1.side.sortRank) }
     }
 }
 
@@ -60,13 +60,40 @@ struct WorkoutSessionView: View {
 private struct LoggedSetRow: View {
 
     @Bindable var set: LoggedSet
+    @Environment(\.modelContext) private var context
 
     var body: some View {
         HStack(spacing: 12) {
-            Text("Set \(set.order + 1)")
+            // Tap the set number to choose the side (Left / Both / Right).
+            Menu {
+                ForEach(SetSide.allCases) { option in
+                    Button {
+                        selectSide(option)
+                    } label: {
+                        if set.side == option {
+                            Label(option.label, systemImage: "checkmark")
+                        } else {
+                            Text(option.label)
+                        }
+                    }
+                }
+            } label: {
+                HStack(spacing: 4) {
+                    Text("Set \(set.order + 1)")
+                    if let badge = set.side.badge {
+                        Text(badge)
+                            .font(.caption2.bold())
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1)
+                            .background(Color.accentColor.opacity(0.2), in: Capsule())
+                            .foregroundStyle(Color.accentColor)
+                    }
+                }
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-                .frame(width: 48, alignment: .leading)
+                .frame(width: 72, alignment: .leading)
+            }
+            .buttonStyle(.plain)
 
             HStack(spacing: 4) {
                 TextField("0", value: $set.weightKg, format: .number)
@@ -97,5 +124,34 @@ private struct LoggedSetRow: View {
             .buttonStyle(.plain)
         }
         .textFieldStyle(.roundedBorder)
+    }
+
+    /// Sets the side for this row. When a `both` set is switched to Left or
+    /// Right, we spawn a companion set for the OPPOSITE side at the same set
+    /// number — so "Set 1 → Right" produces a paired "Set 1 → Left" row. The
+    /// companion copies the weight (usually identical per side) but starts
+    /// with empty reps. Guarded so it only splits once, never runaway.
+    private func selectSide(_ newSide: SetSide) {
+        let wasBoth = (set.side == .both)
+        set.side = newSide
+
+        if wasBoth, newSide != .both, let parent = set.loggedExercise {
+            let opposite: SetSide = (newSide == .left) ? .right : .left
+            let alreadyPaired = parent.sets.contains {
+                $0 !== set && $0.order == set.order && $0.side == opposite
+            }
+            if !alreadyPaired {
+                let companion = LoggedSet(
+                    order: set.order,
+                    weightKg: set.weightKg,
+                    reps: 0,
+                    side: opposite,
+                    isCompleted: false
+                )
+                parent.sets.append(companion)
+            }
+        }
+
+        try? context.save()
     }
 }

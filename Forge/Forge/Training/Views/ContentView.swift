@@ -11,6 +11,11 @@ struct ContentView: View {
                     Label("Program", systemImage: "list.bullet.rectangle")
                 }
 
+            ProgressTabView()
+                .tabItem {
+                    Label("Progress", systemImage: "chart.line.uptrend.xyaxis")
+                }
+
             HistoryView()
                 .tabItem {
                     Label("History", systemImage: "clock.arrow.circlepath")

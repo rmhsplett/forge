@@ -27,7 +27,18 @@ extension WorkoutSession {
         exercises.flatMap(\.sets).filter(\.isCompleted)
     }
 
-    var completedSetCount: Int { completedSets.count }
+    /// Working-set count where a Left/Right pair (same exercise + set number)
+    /// counts as ONE set, per the per-side design decision. Bilateral sets
+    /// each count as one as usual.
+    var completedSetCount: Int {
+        var seen = Set<String>()
+        for exercise in exercises {
+            for set in exercise.sets where set.isCompleted {
+                seen.insert("\(exercise.id)-\(set.order)")
+            }
+        }
+        return seen.count
+    }
 
     /// Total training volume in kg: Σ (weight × reps) over completed sets.
     var totalVolumeKg: Double {
