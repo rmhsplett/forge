@@ -11,6 +11,11 @@ struct ContentView: View {
                     Label("Program", systemImage: "list.bullet.rectangle")
                 }
 
+            HistoryView()
+                .tabItem {
+                    Label("History", systemImage: "clock.arrow.circlepath")
+                }
+
             LibraryView()
                 .tabItem {
                     Label("Library", systemImage: "dumbbell")
