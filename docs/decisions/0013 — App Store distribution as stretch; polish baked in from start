@@ -1,0 +1,30 @@
+# ADR 0013: App Store distribution as stretch goal — polish baked in from v1
+
+**Date:** 2026-08-02
+**Status:** Accepted
+
+## Context
+FORGE is primarily a personal project, but Apple Developer Program 
+membership is being paid regardless. Publishing to the App Store 
+is a low-cost stretch goal — provided certain polish concerns are 
+handled from the start rather than retrofitted.
+
+## Decision
+Do not target the App Store for v1 release, but design and build 
+with distribution in mind:
+- Bundled default program so first-run is never empty.
+- Empty states for every list view.
+- Basic accessibility labels on custom controls (VoiceOver support).
+- Privacy manifest for HealthKit and any third-party APIs.
+- App icon and one-screen onboarding.
+
+## Alternatives considered
+- **Retrofit App Store polish later:** Cheaper now, painful later. 
+  Empty states and accessibility especially.
+- **Full App Store targeting from day one:** Adds review, screenshot, 
+  and marketing work that isn't needed until decision to publish.
+
+## Consequences
+- App is publishable at any point with minimal additional work.
+- Solo-only shortcuts (assumptions about the user, hardcoded values, 
+  missing empty states) are avoided from the start.
