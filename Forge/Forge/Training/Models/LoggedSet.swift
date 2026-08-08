@@ -53,6 +53,22 @@ enum SetSide: String, Codable, CaseIterable, Identifiable {
     }
 }
 
+/// Resistance-band assistance used on a set — e.g. a band looped on the bar
+/// to make chin-ups/pull-ups easier. Stored as the band's color, which is how
+/// lifters actually refer to them. `nil` on a set means no band was used.
+/// Colors are a qualitative marker (assistance varies by brand/stretch), and
+/// the list is easy to edit if your set differs.
+enum BandColor: String, Codable, CaseIterable, Identifiable {
+    case red
+    case blue
+    case purple
+    case black
+    case green
+
+    var id: String { rawValue }
+    var label: String { rawValue.capitalized }
+}
+
 @Model
 final class LoggedSet {
 
@@ -68,6 +84,11 @@ final class LoggedSet {
     /// sets migrate to `.both` automatically (a defaulted attribute is a
     /// lightweight SwiftData migration, no data loss).
     var side: SetSide = SetSide.both
+
+    /// Optional resistance band used for ASSISTANCE on this set (e.g. banded
+    /// chin-ups). Optional/defaulted-nil, so it's CloudKit-safe and a
+    /// lightweight migration for existing sets.
+    var assistBand: BandColor?
 
     /// Reps in reserve — subjective effort marker. Optional because it's
     /// fine to log a set without rating it.
@@ -96,6 +117,7 @@ final class LoggedSet {
         weightKg: Double = 0,
         reps: Int = 0,
         side: SetSide = .both,
+        assistBand: BandColor? = nil,
         rir: Int? = nil,
         isCompleted: Bool = false,
         completedAt: Date? = nil,
@@ -106,6 +128,7 @@ final class LoggedSet {
         self.weightKg = weightKg
         self.reps = reps
         self.side = side
+        self.assistBand = assistBand
         self.rir = rir
         self.isCompleted = isCompleted
         self.completedAt = completedAt

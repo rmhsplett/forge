@@ -100,7 +100,18 @@ private struct LoggedSetRow: View {
                     .keyboardType(.decimalPad)
                     .multilineTextAlignment(.trailing)
                     .frame(width: 56)
-                Text("kg").font(.caption).foregroundStyle(.secondary)
+                // Long-press "kg" to log an assistance band (e.g. banded chin-ups).
+                Text("kg")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .contextMenu { bandMenu }
+                if let band = set.assistBand {
+                    Circle()
+                        .fill(color(for: band))
+                        .frame(width: 10, height: 10)
+                        .overlay(Circle().stroke(.secondary.opacity(0.4), lineWidth: 0.5))
+                        .accessibilityLabel("\(band.label) assist band")
+                }
             }
 
             HStack(spacing: 4) {
@@ -153,5 +164,37 @@ private struct LoggedSetRow: View {
         }
 
         try? context.save()
+    }
+
+    /// Long-press menu on "kg" to attach/remove an assistance band.
+    @ViewBuilder private var bandMenu: some View {
+        Button {
+            set.assistBand = nil
+            try? context.save()
+        } label: {
+            Label("No band", systemImage: set.assistBand == nil ? "checkmark" : "circle")
+        }
+        ForEach(BandColor.allCases) { band in
+            Button {
+                set.assistBand = band
+                try? context.save()
+            } label: {
+                if set.assistBand == band {
+                    Label(band.label, systemImage: "checkmark")
+                } else {
+                    Text(band.label)
+                }
+            }
+        }
+    }
+
+    private func color(for band: BandColor) -> Color {
+        switch band {
+        case .red: return .red
+        case .blue: return .blue
+        case .purple: return .purple
+        case .black: return .primary
+        case .green: return .green
+        }
     }
 }

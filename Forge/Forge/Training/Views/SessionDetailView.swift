@@ -33,8 +33,15 @@ struct SessionDetailView: View {
                             .foregroundStyle(.secondary)
                             Spacer()
                             if set.isCompleted {
-                                Text("\(set.weightKg.formatted(.number.precision(.fractionLength(0...1)))) kg × \(set.reps)")
-                                    .monospacedDigit()
+                                HStack(spacing: 6) {
+                                    if let band = set.assistBand {
+                                        Text("\(band.label) band")
+                                            .font(.caption2)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    Text("\(set.weightKg.formatted(.number.precision(.fractionLength(0...1)))) kg × \(set.reps)")
+                                        .monospacedDigit()
+                                }
                             } else {
                                 Text("not logged")
                                     .font(.caption)
