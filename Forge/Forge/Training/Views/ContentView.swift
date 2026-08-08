@@ -16,6 +16,11 @@ struct ContentView: View {
                     Label("Progress", systemImage: "chart.line.uptrend.xyaxis")
                 }
 
+            InsightsView()
+                .tabItem {
+                    Label("Insights", systemImage: "chart.bar.xaxis")
+                }
+
             HistoryView()
                 .tabItem {
                     Label("History", systemImage: "clock.arrow.circlepath")

@@ -29,6 +29,14 @@ enum MuscleGroup: String, Codable, CaseIterable {
     case legs
     case core
     case frontDelts
+
+    /// Display name for charts/labels (handles the camelCase case).
+    var label: String {
+        switch self {
+        case .frontDelts: return "Front Delts"
+        default: return rawValue.capitalized
+        }
+    }
 }
 
 /// How an exercise is loaded / displayed. Drives weight-entry UI
