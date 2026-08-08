@@ -50,6 +50,7 @@ enum ExerciseDisplayType: String, Codable, CaseIterable {
     case bodyweight
     case bandAssisted
     case bodyweightPlusLoad
+    case kettlebell
 }
 
 /// Where a body-weight measurement came from. `manual` = user typed it,

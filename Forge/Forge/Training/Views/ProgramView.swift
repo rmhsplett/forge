@@ -37,8 +37,17 @@ struct ProgramView: View {
                     ContentUnavailableView(
                         "No active program",
                         systemImage: "list.bullet.rectangle",
-                        description: Text("The starter program didn't seed — check the console for [ProgramSeed] messages.")
+                        description: Text("Tap Programs to create one, or activate an existing program.")
                     )
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationLink {
+                        ProgramsListView()
+                    } label: {
+                        Label("Programs", systemImage: "square.stack.3d.up")
+                    }
                 }
             }
         }

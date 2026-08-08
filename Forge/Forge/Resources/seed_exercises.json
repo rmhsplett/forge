@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "exercises": [
     {
       "id": "incline_barbell_press",
@@ -916,6 +916,274 @@
       "defaultRepRange": [
         10,
         15
+      ],
+      "notes": null
+    },
+    {
+      "id": "kettlebell_swing",
+      "name": "Kettlebell Swing",
+      "primaryMuscle": "legs",
+      "secondaryMuscles": [
+        "back",
+        "core",
+        "frontDelts"
+      ],
+      "displayType": "kettlebell",
+      "isUnilateral": false,
+      "defaultRestSeconds": 75,
+      "progressionIncrementKg": 4.0,
+      "barWeightKg": null,
+      "defaultRepRange": [
+        15,
+        20
+      ],
+      "notes": null
+    },
+    {
+      "id": "kettlebell_goblet_squat",
+      "name": "KB Goblet Squat",
+      "primaryMuscle": "legs",
+      "secondaryMuscles": [
+        "core"
+      ],
+      "displayType": "kettlebell",
+      "isUnilateral": false,
+      "defaultRestSeconds": 90,
+      "progressionIncrementKg": 4.0,
+      "barWeightKg": null,
+      "defaultRepRange": [
+        8,
+        12
+      ],
+      "notes": null
+    },
+    {
+      "id": "kettlebell_deadlift",
+      "name": "KB Deadlift",
+      "primaryMuscle": "legs",
+      "secondaryMuscles": [
+        "back",
+        "core"
+      ],
+      "displayType": "kettlebell",
+      "isUnilateral": false,
+      "defaultRestSeconds": 90,
+      "progressionIncrementKg": 4.0,
+      "barWeightKg": null,
+      "defaultRepRange": [
+        8,
+        12
+      ],
+      "notes": null
+    },
+    {
+      "id": "kettlebell_clean_and_press",
+      "name": "KB Clean & Press",
+      "primaryMuscle": "shoulders",
+      "secondaryMuscles": [
+        "legs",
+        "triceps",
+        "core"
+      ],
+      "displayType": "kettlebell",
+      "isUnilateral": true,
+      "defaultRestSeconds": 90,
+      "progressionIncrementKg": 4.0,
+      "barWeightKg": null,
+      "defaultRepRange": [
+        5,
+        8
+      ],
+      "notes": null
+    },
+    {
+      "id": "kettlebell_snatch",
+      "name": "KB Snatch",
+      "primaryMuscle": "shoulders",
+      "secondaryMuscles": [
+        "legs",
+        "back",
+        "core"
+      ],
+      "displayType": "kettlebell",
+      "isUnilateral": true,
+      "defaultRestSeconds": 75,
+      "progressionIncrementKg": 4.0,
+      "barWeightKg": null,
+      "defaultRepRange": [
+        8,
+        12
+      ],
+      "notes": null
+    },
+    {
+      "id": "kettlebell_push_press",
+      "name": "KB Push Press",
+      "primaryMuscle": "shoulders",
+      "secondaryMuscles": [
+        "legs",
+        "triceps"
+      ],
+      "displayType": "kettlebell",
+      "isUnilateral": false,
+      "defaultRestSeconds": 90,
+      "progressionIncrementKg": 4.0,
+      "barWeightKg": null,
+      "defaultRepRange": [
+        5,
+        8
+      ],
+      "notes": null
+    },
+    {
+      "id": "kettlebell_turkish_get_up",
+      "name": "Turkish Get-Up",
+      "primaryMuscle": "core",
+      "secondaryMuscles": [
+        "shoulders",
+        "legs"
+      ],
+      "displayType": "kettlebell",
+      "isUnilateral": true,
+      "defaultRestSeconds": 90,
+      "progressionIncrementKg": 4.0,
+      "barWeightKg": null,
+      "defaultRepRange": [
+        3,
+        5
+      ],
+      "notes": null
+    },
+    {
+      "id": "kettlebell_high_pull",
+      "name": "KB High Pull",
+      "primaryMuscle": "back",
+      "secondaryMuscles": [
+        "shoulders",
+        "biceps",
+        "legs"
+      ],
+      "displayType": "kettlebell",
+      "isUnilateral": true,
+      "defaultRestSeconds": 75,
+      "progressionIncrementKg": 4.0,
+      "barWeightKg": null,
+      "defaultRepRange": [
+        8,
+        12
+      ],
+      "notes": null
+    },
+    {
+      "id": "kettlebell_row",
+      "name": "KB Row",
+      "primaryMuscle": "back",
+      "secondaryMuscles": [
+        "biceps",
+        "core"
+      ],
+      "displayType": "kettlebell",
+      "isUnilateral": true,
+      "defaultRestSeconds": 75,
+      "progressionIncrementKg": 4.0,
+      "barWeightKg": null,
+      "defaultRepRange": [
+        8,
+        12
+      ],
+      "notes": null
+    },
+    {
+      "id": "kettlebell_reverse_lunge",
+      "name": "KB Reverse Lunge",
+      "primaryMuscle": "legs",
+      "secondaryMuscles": [
+        "core"
+      ],
+      "displayType": "kettlebell",
+      "isUnilateral": true,
+      "defaultRestSeconds": 75,
+      "progressionIncrementKg": 4.0,
+      "barWeightKg": null,
+      "defaultRepRange": [
+        8,
+        12
+      ],
+      "notes": null
+    },
+    {
+      "id": "kettlebell_thruster",
+      "name": "KB Thruster",
+      "primaryMuscle": "legs",
+      "secondaryMuscles": [
+        "shoulders",
+        "triceps",
+        "core"
+      ],
+      "displayType": "kettlebell",
+      "isUnilateral": false,
+      "defaultRestSeconds": 75,
+      "progressionIncrementKg": 4.0,
+      "barWeightKg": null,
+      "defaultRepRange": [
+        8,
+        12
+      ],
+      "notes": null
+    },
+    {
+      "id": "kettlebell_halo",
+      "name": "KB Halo",
+      "primaryMuscle": "shoulders",
+      "secondaryMuscles": [
+        "core"
+      ],
+      "displayType": "kettlebell",
+      "isUnilateral": false,
+      "defaultRestSeconds": 60,
+      "progressionIncrementKg": 4.0,
+      "barWeightKg": null,
+      "defaultRepRange": [
+        8,
+        12
+      ],
+      "notes": null
+    },
+    {
+      "id": "kettlebell_farmers_carry",
+      "name": "KB Farmer's Carry",
+      "primaryMuscle": "core",
+      "secondaryMuscles": [
+        "back",
+        "legs"
+      ],
+      "displayType": "kettlebell",
+      "isUnilateral": false,
+      "defaultRestSeconds": 75,
+      "progressionIncrementKg": 4.0,
+      "barWeightKg": null,
+      "defaultRepRange": [
+        10,
+        20
+      ],
+      "notes": null
+    },
+    {
+      "id": "kettlebell_windmill",
+      "name": "KB Windmill",
+      "primaryMuscle": "core",
+      "secondaryMuscles": [
+        "shoulders",
+        "legs"
+      ],
+      "displayType": "kettlebell",
+      "isUnilateral": true,
+      "defaultRestSeconds": 60,
+      "progressionIncrementKg": 4.0,
+      "barWeightKg": null,
+      "defaultRepRange": [
+        5,
+        8
       ],
       "notes": null
     }
