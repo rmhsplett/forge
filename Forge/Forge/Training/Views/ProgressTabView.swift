@@ -29,6 +29,7 @@ struct ProgressTabView: View {
                     }
                 }
             }
+            .frostedList()
             .navigationTitle("Progress")
             .overlay {
                 if loggedLifts.isEmpty {

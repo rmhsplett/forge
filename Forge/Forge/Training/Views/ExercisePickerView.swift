@@ -1,8 +1,9 @@
 import SwiftUI
 import SwiftData
 
-/// Searchable list of the exercise library for adding to a program day.
-/// Presented as a sheet; calls `onPick` and dismisses on selection.
+/// Searchable, muscle-grouped picker for adding an exercise to a program day.
+/// Uses the same grouped overview as the Library. Presented as a sheet; calls
+/// `onPick` and dismisses on selection.
 struct ExercisePickerView: View {
 
     let onPick: (Exercise) -> Void
@@ -18,23 +19,15 @@ struct ExercisePickerView: View {
 
     var body: some View {
         NavigationStack {
-            List(filtered) { exercise in
-                Button {
-                    onPick(exercise)
-                    dismiss()
-                } label: {
-                    HStack(spacing: 12) {
-                        Image(systemName: exercise.displayType.symbolName)
-                            .foregroundStyle(.secondary)
-                            .frame(width: 26)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(exercise.name)
-                                .foregroundStyle(.primary)
-                            Text(exercise.primaryMuscle.label)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
+            List {
+                GroupedExerciseSections(exercises: filtered) { exercise, isKettlebell in
+                    Button {
+                        onPick(exercise)
+                        dismiss()
+                    } label: {
+                        ExerciseRowLabel(exercise: exercise, showMuscle: isKettlebell)
                     }
+                    .buttonStyle(.plain)
                 }
             }
             .searchable(text: $search, prompt: "Search exercises")

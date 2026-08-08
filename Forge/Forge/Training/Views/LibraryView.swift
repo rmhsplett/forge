@@ -1,37 +1,53 @@
 import SwiftUI
 import SwiftData
 
-/// Read-only list of the seeded exercise library. (Was the body of the old
-/// ContentView; extracted so ContentView can host tabs.)
+/// The exercise library — grouped by primary muscle with a dedicated
+/// Kettlebell section, searchable, and with a ＋ button to add your own
+/// custom exercises.
 struct LibraryView: View {
 
     @Query(sort: \Exercise.name) private var exercises: [Exercise]
+    @State private var search = ""
+    @State private var showingAdd = false
+
+    private var filtered: [Exercise] {
+        guard !search.isEmpty else { return exercises }
+        return exercises.filter { $0.name.localizedCaseInsensitiveContains(search) }
+    }
 
     var body: some View {
         NavigationStack {
-            List(exercises) { exercise in
-                HStack(spacing: 12) {
-                    Image(systemName: exercise.displayType.symbolName)
-                        .font(.title3)
-                        .foregroundStyle(.secondary)
-                        .frame(width: 30)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(exercise.name)
-                            .font(.headline)
-                        Text(exercise.primaryMuscle.label)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+            List {
+                GroupedExerciseSections(exercises: filtered) { exercise, isKettlebell in
+                    ExerciseRowLabel(exercise: exercise, showMuscle: isKettlebell)
+                }
+            }
+            .frostedList()
+            .searchable(text: $search, prompt: "Search exercises")
+            .navigationTitle("Library")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showingAdd = true
+                    } label: {
+                        Label("Add exercise", systemImage: "plus")
                     }
                 }
             }
-            .navigationTitle("Library · \(exercises.count)")
+            .sheet(isPresented: $showingAdd) {
+                AddExerciseSheet()
+            }
             .overlay {
-                if exercises.isEmpty {
-                    ContentUnavailableView(
-                        "No exercises",
-                        systemImage: "dumbbell",
-                        description: Text("Seeding didn't run — check the console for [Seed] messages.")
-                    )
+                if filtered.isEmpty {
+                    if search.isEmpty {
+                        ContentUnavailableView(
+                            "No exercises",
+                            systemImage: "dumbbell",
+                            description: Text("Tap ＋ to add one, or check the console for [Seed] messages.")
+                        )
+                    } else {
+                        ContentUnavailableView.search(text: search)
+                    }
                 }
             }
         }

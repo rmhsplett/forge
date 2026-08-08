@@ -23,6 +23,7 @@ struct HistoryView: View {
                 }
                 .onDelete(perform: delete)
             }
+            .frostedList()
             .navigationTitle("History")
             .overlay {
                 if sessions.isEmpty {

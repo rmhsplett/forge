@@ -34,6 +34,7 @@ struct WorkoutSessionView: View {
                 }
             }
         }
+        .frostedList()
         .navigationTitle(session.date.formatted(date: .abbreviated, time: .shortened))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

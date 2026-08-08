@@ -1,15 +1,25 @@
 import SwiftUI
 import SwiftData
+import UIKit
 
-/// App root: the tab bar, with the app-wide accent color and font design
-/// applied from Settings.
+/// App root: the tab bar, with the app-wide accent color, font design, and
+/// optional background photo applied from Settings.
 struct ContentView: View {
 
     @AppStorage(ThemeStorage.accentKey) private var accentRaw = AccentTheme.blue.rawValue
     @AppStorage(ThemeStorage.fontKey) private var fontRaw = AppFontDesign.standard.rawValue
 
+    init() {
+        // Clear the opaque scroll background on every List app-wide so the
+        // background photo (or the normal grouped color) shows through.
+        UICollectionView.appearance().backgroundColor = .clear
+    }
+
     var body: some View {
-        TabView {
+        ZStack {
+            BackgroundView()
+
+            TabView {
             ProgramView()
                 .tabItem {
                     Label("Program", systemImage: "list.bullet.rectangle")
@@ -34,6 +44,7 @@ struct ContentView: View {
                 .tabItem {
                     Label("Library", systemImage: "dumbbell")
                 }
+            }
         }
         .tint(ThemeStorage.accent(accentRaw))
         .fontDesign(ThemeStorage.design(fontRaw))

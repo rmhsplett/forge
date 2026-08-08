@@ -36,7 +36,8 @@ enum AccentTheme: String, CaseIterable, Identifiable {
 /// keep Dynamic Type / accessibility working. Custom bundled fonts can be
 /// added later without changing how this is consumed.
 enum AppFontDesign: String, CaseIterable, Identifiable {
-    case standard, rounded, serif, monospaced
+    // `rounded` removed — too close to `standard`. Distinct system designs only.
+    case standard, serif, monospaced
 
     var id: String { rawValue }
     var label: String { rawValue.capitalized }
@@ -44,11 +45,32 @@ enum AppFontDesign: String, CaseIterable, Identifiable {
     var design: Font.Design {
         switch self {
         case .standard: return .default
-        case .rounded: return .rounded
         case .serif: return .serif
         case .monospaced: return .monospaced
         }
     }
+}
+
+/// Makes a List frosted when a background photo is set: hides the opaque
+/// scroll background and gives rows a translucent material so the photo shows
+/// through. A no-op (normal opaque look) when there's no background image.
+struct FrostedListModifier: ViewModifier {
+    @AppStorage(BackgroundStore.hasImageKey) private var hasImage = false
+
+    func body(content: Content) -> some View {
+        if hasImage {
+            content
+                .scrollContentBackground(.hidden)
+                .listRowBackground(Rectangle().fill(.ultraThinMaterial))
+        } else {
+            content
+        }
+    }
+}
+
+extension View {
+    /// Apply to a `List` to make it frosted over the background photo.
+    func frostedList() -> some View { modifier(FrostedListModifier()) }
 }
 
 /// Central keys + small resolvers so views don't repeat the AppStorage keys.

@@ -1,4 +1,5 @@
 import SwiftUI
+import PhotosUI
 
 /// App settings: the global auto-suggest toggle and appearance choices.
 /// Presented as a sheet from the Program tab's gear button.
@@ -9,6 +10,9 @@ struct SettingsView: View {
     @AppStorage("autoSuggestEnabled") private var autoSuggestEnabled = true
     @AppStorage(ThemeStorage.accentKey) private var accentRaw = AccentTheme.blue.rawValue
     @AppStorage(ThemeStorage.fontKey) private var fontRaw = AppFontDesign.standard.rawValue
+    @AppStorage(BackgroundStore.hasImageKey) private var hasBackground = false
+
+    @State private var pickerItem: PhotosPickerItem?
 
     var body: some View {
         NavigationStack {
@@ -40,12 +44,38 @@ struct SettingsView: View {
                         }
                     }
                 }
+
+                Section {
+                    PhotosPicker(selection: $pickerItem, matching: .images) {
+                        Label(hasBackground ? "Change background photo" : "Choose background photo",
+                              systemImage: "photo")
+                    }
+                    if hasBackground {
+                        Button(role: .destructive) {
+                            BackgroundStore.remove()
+                        } label: {
+                            Label("Remove background", systemImage: "trash")
+                        }
+                    }
+                } header: {
+                    Text("Background")
+                } footer: {
+                    Text("Your photo sits behind the app; the panels frost over it so text stays readable.")
+                }
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }
+                }
+            }
+            .onChange(of: pickerItem) { _, newItem in
+                guard let newItem else { return }
+                Task {
+                    if let data = try? await newItem.loadTransferable(type: Data.self) {
+                        BackgroundStore.save(data)
+                    }
                 }
             }
         }

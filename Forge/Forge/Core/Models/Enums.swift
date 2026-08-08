@@ -52,6 +52,21 @@ enum ExerciseDisplayType: String, Codable, CaseIterable {
     case bodyweightPlusLoad
     case kettlebell
 
+    /// Human-friendly label for pickers (rawValue has camelCase we don't want
+    /// to show).
+    var pickerLabel: String {
+        switch self {
+        case .barbell: return "Barbell"
+        case .dumbbell: return "Dumbbell"
+        case .machine: return "Machine"
+        case .cable: return "Cable"
+        case .bodyweight: return "Bodyweight"
+        case .bandAssisted: return "Band-assisted"
+        case .bodyweightPlusLoad: return "Bodyweight + load"
+        case .kettlebell: return "Kettlebell"
+        }
+    }
+
     /// SF Symbol used to represent this equipment type in lists. A cheap,
     /// no-artwork first pass; can be swapped for custom illustrations later.
     var symbolName: String {

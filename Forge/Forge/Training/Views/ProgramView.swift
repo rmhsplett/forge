@@ -34,6 +34,7 @@ struct ProgramView: View {
                             }
                         }
                     }
+                    .frostedList()
                     .navigationTitle(program.name)
                 } else {
                     ContentUnavailableView(

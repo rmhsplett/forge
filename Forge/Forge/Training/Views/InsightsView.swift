@@ -18,6 +18,7 @@ struct InsightsView: View {
                 volumeSection
                 bodyWeightSection
             }
+            .frostedList()
             .navigationTitle("Insights")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
