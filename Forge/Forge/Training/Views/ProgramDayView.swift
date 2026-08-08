@@ -9,6 +9,8 @@ struct ProgramDayView: View {
 
     @Environment(\.modelContext) private var context
 
+    @AppStorage("autoSuggestEnabled") private var autoSuggestEnabled = true
+
     // Holds the session we just started so we can navigate into it.
     @State private var activeSession: WorkoutSession?
 
@@ -41,7 +43,7 @@ struct ProgramDayView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
-                    activeSession = WorkoutSessionBuilder.startSession(from: day, in: context)
+                    activeSession = WorkoutSessionBuilder.startSession(from: day, in: context, autoSuggestEnabled: autoSuggestEnabled)
                 } label: {
                     Label("Start Workout", systemImage: "play.fill")
                 }
@@ -64,6 +66,12 @@ private struct ProgramExerciseRow: View {
 
     let programExercise: ProgramExercise
 
+    @AppStorage("autoSuggestEnabled") private var autoSuggestEnabled = true
+
+    private var suggestion: ProgressionSuggestion? {
+        ProgressionSuggester.suggestion(for: programExercise, globalEnabled: autoSuggestEnabled)
+    }
+
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: 2) {
@@ -76,10 +84,22 @@ private struct ProgramExerciseRow: View {
                 }
             }
             Spacer(minLength: 12)
-            Text("\(programExercise.targetSets) × \(programExercise.repRangeLow)–\(programExercise.repRangeHigh)")
-                .font(.subheadline)
-                .monospacedDigit()
-                .foregroundStyle(.secondary)
+            VStack(alignment: .trailing, spacing: 2) {
+                Text("\(programExercise.targetSets) × \(programExercise.repRangeLow)–\(programExercise.repRangeHigh)")
+                    .font(.subheadline)
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+                if let suggestion, suggestion.weightKg > 0 {
+                    HStack(spacing: 2) {
+                        if suggestion.increased {
+                            Image(systemName: "arrow.up").font(.caption2)
+                        }
+                        Text("\(suggestion.weightKg.formatted(.number.precision(.fractionLength(0...1)))) kg")
+                            .font(.caption)
+                    }
+                    .foregroundStyle(suggestion.increased ? Color.green : Color.secondary)
+                }
+            }
         }
     }
 }

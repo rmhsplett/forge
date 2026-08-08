@@ -25,20 +25,32 @@ enum WorkoutSessionBuilder {
     ///   until the user checks them off, so nothing counts toward volume/PRs
     ///   until it's actually performed.
     @discardableResult
-    static func startSession(from day: ProgramDay, in context: ModelContext) -> WorkoutSession {
+    static func startSession(
+        from day: ProgramDay,
+        in context: ModelContext,
+        autoSuggestEnabled: Bool = true
+    ) -> WorkoutSession {
         let session = WorkoutSession(date: .now, programDay: day)
 
         session.exercises = day.exercises
             .sorted { $0.order < $1.order }
             .enumerated()
             .map { index, prescription in
+                // Pre-fill each set with the double-progression suggestion so
+                // you start from last time's numbers, not a blank slate.
+                let suggestion = ProgressionSuggester.suggestion(
+                    for: prescription,
+                    globalEnabled: autoSuggestEnabled
+                )
+                let startingWeight = suggestion?.weightKg ?? 0
+
                 let logged = LoggedExercise(
                     order: index,
                     exercise: prescription.exercise,
                     programExercise: prescription
                 )
                 logged.sets = (0..<max(prescription.targetSets, 1)).map { setIndex in
-                    LoggedSet(order: setIndex, weightKg: 0, reps: 0, isCompleted: false)
+                    LoggedSet(order: setIndex, weightKg: startingWeight, reps: 0, isCompleted: false)
                 }
                 return logged
             }
