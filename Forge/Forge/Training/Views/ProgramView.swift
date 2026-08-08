@@ -13,6 +13,8 @@ struct ProgramView: View {
 
     private var program: Program? { activePrograms.first }
 
+    @State private var showingSettings = false
+
     var body: some View {
         NavigationStack {
             Group {
@@ -49,6 +51,16 @@ struct ProgramView: View {
                         Label("Programs", systemImage: "square.stack.3d.up")
                     }
                 }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showingSettings = true
+                    } label: {
+                        Label("Settings", systemImage: "gearshape")
+                    }
+                }
+            }
+            .sheet(isPresented: $showingSettings) {
+                SettingsView()
             }
         }
     }

@@ -1,9 +1,13 @@
 import SwiftUI
 import SwiftData
 
-/// App root: two tabs for milestone 1 — the read-only Program view and the
-/// exercise Library. The logging loop (milestone 2) will add to this.
+/// App root: the tab bar, with the app-wide accent color and font design
+/// applied from Settings.
 struct ContentView: View {
+
+    @AppStorage(ThemeStorage.accentKey) private var accentRaw = AccentTheme.blue.rawValue
+    @AppStorage(ThemeStorage.fontKey) private var fontRaw = AppFontDesign.standard.rawValue
+
     var body: some View {
         TabView {
             ProgramView()
@@ -31,6 +35,8 @@ struct ContentView: View {
                     Label("Library", systemImage: "dumbbell")
                 }
         }
+        .tint(ThemeStorage.accent(accentRaw))
+        .fontDesign(ThemeStorage.design(fontRaw))
     }
 }
 

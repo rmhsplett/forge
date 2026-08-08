@@ -23,12 +23,17 @@ struct ExercisePickerView: View {
                     onPick(exercise)
                     dismiss()
                 } label: {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(exercise.name)
-                            .foregroundStyle(.primary)
-                        Text(exercise.primaryMuscle.label)
-                            .font(.caption)
+                    HStack(spacing: 12) {
+                        Image(systemName: exercise.displayType.symbolName)
                             .foregroundStyle(.secondary)
+                            .frame(width: 26)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(exercise.name)
+                                .foregroundStyle(.primary)
+                            Text(exercise.primaryMuscle.label)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
             }

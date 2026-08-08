@@ -10,12 +10,18 @@ struct LibraryView: View {
     var body: some View {
         NavigationStack {
             List(exercises) { exercise in
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(exercise.name)
-                        .font(.headline)
-                    Text(exercise.primaryMuscle.rawValue.capitalized)
-                        .font(.subheadline)
+                HStack(spacing: 12) {
+                    Image(systemName: exercise.displayType.symbolName)
+                        .font(.title3)
                         .foregroundStyle(.secondary)
+                        .frame(width: 30)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(exercise.name)
+                            .font(.headline)
+                        Text(exercise.primaryMuscle.label)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
             .navigationTitle("Library · \(exercises.count)")

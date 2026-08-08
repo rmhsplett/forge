@@ -51,6 +51,21 @@ enum ExerciseDisplayType: String, Codable, CaseIterable {
     case bandAssisted
     case bodyweightPlusLoad
     case kettlebell
+
+    /// SF Symbol used to represent this equipment type in lists. A cheap,
+    /// no-artwork first pass; can be swapped for custom illustrations later.
+    var symbolName: String {
+        switch self {
+        case .barbell: return "figure.strengthtraining.traditional"
+        case .dumbbell: return "dumbbell.fill"
+        case .machine: return "gearshape.2.fill"
+        case .cable: return "figure.strengthtraining.functional"
+        case .bodyweight: return "figure.core.training"
+        case .bandAssisted: return "figure.flexibility"
+        case .bodyweightPlusLoad: return "figure.strengthtraining.traditional"
+        case .kettlebell: return "figure.cross.training"
+        }
+    }
 }
 
 /// Where a body-weight measurement came from. `manual` = user typed it,
