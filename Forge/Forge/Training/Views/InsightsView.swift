@@ -16,7 +16,9 @@ struct InsightsView: View {
         NavigationStack {
             List {
                 volumeSection
+                    .listRowBackground(PanelBackground())
                 bodyWeightSection
+                    .listRowBackground(PanelBackground())
             }
             .frostedList()
             .navigationTitle("Insights")

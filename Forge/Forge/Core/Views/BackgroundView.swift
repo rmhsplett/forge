@@ -26,11 +26,20 @@ struct BackgroundView: View {
         .id(token)
     }
 
-    /// A soft top-to-bottom dark scrim so frosted pills and text stay legible
-    /// over bright photos.
+    /// A dark scrim, stronger at the very top and bottom (where the nav-bar
+    /// title and tab bar sit) so their text stays legible over bright photos.
     private var scrim: some View {
         LinearGradient(
-            colors: [.black.opacity(0.15), .black.opacity(0.35)],
+            stops: [
+                // Dark enough across the whole title strip to keep white text
+                // legible even over a bright/white photo, then fades fast so
+                // the middle of the photo stays vivid.
+                .init(color: .black.opacity(0.55), location: 0.0),
+                .init(color: .black.opacity(0.45), location: 0.14),
+                .init(color: .black.opacity(0.18), location: 0.30),
+                .init(color: .black.opacity(0.18), location: 0.82),
+                .init(color: .black.opacity(0.45), location: 1.0)
+            ],
             startPoint: .top,
             endPoint: .bottom
         )

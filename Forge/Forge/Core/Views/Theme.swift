@@ -61,7 +61,9 @@ struct FrostedListModifier: ViewModifier {
         if hasImage {
             content
                 .scrollContentBackground(.hidden)
-                .listRowBackground(Rectangle().fill(.ultraThinMaterial))
+                .background {
+                    BackgroundView()
+                }
         } else {
             content
         }
@@ -69,14 +71,41 @@ struct FrostedListModifier: ViewModifier {
 }
 
 extension View {
-    /// Apply to a `List` to make it frosted over the background photo.
+    /// Apply to a `List` to make it frosted over the background photo. Handles
+    /// the photo + transparent scroll area; row translucency is set separately
+    /// via `.listRowBackground(PanelBackground())` on the rows themselves
+    /// (SwiftUI ignores listRowBackground applied to the List container).
     func frostedList() -> some View { modifier(FrostedListModifier()) }
+}
+
+/// Background for content panels (list rows) over a photo: frosted glass with
+/// a user-adjustable opacity (0 = clear, 1 = solid/opaque). Falls back to the
+/// normal grouped color when no background photo is set.
+struct PanelBackground: View {
+    @AppStorage(BackgroundStore.hasImageKey) private var hasImage = false
+    @AppStorage(ThemeStorage.panelOpacityKey) private var opacity = 0.5
+
+    var body: some View {
+        if hasImage {
+            ZStack {
+                // Frost fades out toward 0 (fully clear photo)…
+                Rectangle().fill(.ultraThinMaterial)
+                    .opacity(min(1, opacity * 2))
+                // …and a solid tint grows in toward 1 (opaque like before).
+                Color(.secondarySystemGroupedBackground)
+                    .opacity(max(0, opacity * 2 - 1))
+            }
+        } else {
+            Color(.secondarySystemGroupedBackground)
+        }
+    }
 }
 
 /// Central keys + small resolvers so views don't repeat the AppStorage keys.
 enum ThemeStorage {
     static let accentKey = "accentTheme"
     static let fontKey = "fontDesign"
+    static let panelOpacityKey = "panelOpacity"
 
     static func accent(_ raw: String) -> Color {
         (AccentTheme(rawValue: raw) ?? .blue).color

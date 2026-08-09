@@ -32,6 +32,7 @@ struct WorkoutSessionView: View {
                         Text("Target: \(pe.targetSets) × \(pe.repRangeLow)–\(pe.repRangeHigh)")
                     }
                 }
+                .listRowBackground(PanelBackground())
             }
         }
         .frostedList()

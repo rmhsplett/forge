@@ -33,6 +33,7 @@ struct ProgramView: View {
                                 }
                             }
                         }
+                        .listRowBackground(PanelBackground())
                     }
                     .frostedList()
                     .navigationTitle(program.name)

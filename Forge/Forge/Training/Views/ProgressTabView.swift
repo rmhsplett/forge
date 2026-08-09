@@ -28,6 +28,7 @@ struct ProgressTabView: View {
                         ProgressLiftRow(exercise: item.exercise, series: item.series)
                     }
                 }
+                .listRowBackground(PanelBackground())
             }
             .frostedList()
             .navigationTitle("Progress")

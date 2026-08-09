@@ -22,6 +22,7 @@ struct HistoryView: View {
                     }
                 }
                 .onDelete(perform: delete)
+                .listRowBackground(PanelBackground())
             }
             .frostedList()
             .navigationTitle("History")

@@ -8,6 +8,7 @@ struct ContentView: View {
 
     @AppStorage(ThemeStorage.accentKey) private var accentRaw = AccentTheme.blue.rawValue
     @AppStorage(ThemeStorage.fontKey) private var fontRaw = AppFontDesign.standard.rawValue
+    @AppStorage(BackgroundStore.hasImageKey) private var hasImage = false
 
     init() {
         // Clear the opaque scroll background on every List app-wide so the
@@ -16,10 +17,7 @@ struct ContentView: View {
     }
 
     var body: some View {
-        ZStack {
-            BackgroundView()
-
-            TabView {
+        TabView {
             ProgramView()
                 .tabItem {
                     Label("Program", systemImage: "list.bullet.rectangle")
@@ -44,10 +42,13 @@ struct ContentView: View {
                 .tabItem {
                     Label("Library", systemImage: "dumbbell")
                 }
-            }
         }
         .tint(ThemeStorage.accent(accentRaw))
         .fontDesign(ThemeStorage.design(fontRaw))
+        // With a background photo, switch to dark "overlay" mode: light text on
+        // dark frosted glass reads cleanly over any photo (like iOS over a
+        // wallpaper). Follows the system setting when there's no photo.
+        .preferredColorScheme(hasImage ? .dark : nil)
     }
 }
 

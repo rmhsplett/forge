@@ -38,6 +38,7 @@ struct GroupedExerciseSections<Row: View>: View {
             if !items.isEmpty {
                 Section(muscle.label) {
                     ForEach(items) { row($0, false) }
+                        .listRowBackground(PanelBackground())
                 }
             }
         }
@@ -46,6 +47,7 @@ struct GroupedExerciseSections<Row: View>: View {
         if !kettlebell.isEmpty {
             Section("Kettlebell") {
                 ForEach(kettlebell) { row($0, true) }
+                    .listRowBackground(PanelBackground())
             }
         }
     }

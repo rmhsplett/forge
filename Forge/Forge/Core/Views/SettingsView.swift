@@ -1,5 +1,6 @@
 import SwiftUI
 import PhotosUI
+import UIKit
 
 /// App settings: the global auto-suggest toggle and appearance choices.
 /// Presented as a sheet from the Program tab's gear button.
@@ -11,8 +12,10 @@ struct SettingsView: View {
     @AppStorage(ThemeStorage.accentKey) private var accentRaw = AccentTheme.blue.rawValue
     @AppStorage(ThemeStorage.fontKey) private var fontRaw = AppFontDesign.standard.rawValue
     @AppStorage(BackgroundStore.hasImageKey) private var hasBackground = false
+    @AppStorage(ThemeStorage.panelOpacityKey) private var panelOpacity = 0.5
 
     @State private var pickerItem: PhotosPickerItem?
+    @State private var editingImage: PickedImage?
 
     var body: some View {
         NavigationStack {
@@ -51,6 +54,15 @@ struct SettingsView: View {
                               systemImage: "photo")
                     }
                     if hasBackground {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Panel transparency")
+                            HStack(spacing: 8) {
+                                Image(systemName: "circle.dotted")
+                                Slider(value: $panelOpacity, in: 0...1)
+                                Image(systemName: "circle.fill")
+                            }
+                        }
+
                         Button(role: .destructive) {
                             BackgroundStore.remove()
                         } label: {
@@ -60,7 +72,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Background")
                 } footer: {
-                    Text("Your photo sits behind the app; the panels frost over it so text stays readable.")
+                    Text("Your photo sits behind the app; the panels frost over it. Drag the slider from clear (left) to solid (right).")
                 }
             }
             .navigationTitle("Settings")
@@ -73,9 +85,16 @@ struct SettingsView: View {
             .onChange(of: pickerItem) { _, newItem in
                 guard let newItem else { return }
                 Task {
-                    if let data = try? await newItem.loadTransferable(type: Data.self) {
-                        BackgroundStore.save(data)
+                    if let data = try? await newItem.loadTransferable(type: Data.self),
+                       let image = UIImage(data: data) {
+                        editingImage = PickedImage(image: image)   // open the position editor
                     }
+                    pickerItem = nil   // allow re-picking the same photo later
+                }
+            }
+            .fullScreenCover(item: $editingImage) { picked in
+                BackgroundEditorView(image: picked.image) { data in
+                    BackgroundStore.save(data)
                 }
             }
         }
