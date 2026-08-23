@@ -33,7 +33,7 @@ struct ConditioningSessionView: View {
                     HStack {
                         Text(pe.exercise?.name ?? "Exercise")
                         Spacer()
-                        Text("\(pe.repRangeLow)–\(pe.repRangeHigh) reps")
+                        Text("\(pe.repRangeLow) reps")
                             .foregroundStyle(.secondary)
                             .monospacedDigit()
                     }
@@ -48,6 +48,8 @@ struct ConditioningSessionView: View {
             }
         }
         .onAppear {
+            PhoneSessionManager.shared.activeSession = session
+            PhoneSessionManager.shared.send(PhoneSessionManager.makeWorkout(from: session))
             if session.format == .amrap { startAMRAP() }
         }
         .onDisappear { timer.stop() }

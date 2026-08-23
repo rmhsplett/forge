@@ -12,12 +12,16 @@ struct WorkoutSessionView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
 
+    @StateObject private var restTimer = IntervalTimer()
+    @AppStorage("compoundRestSeconds") private var compoundRest = 120
+    @AppStorage("isolationRestSeconds") private var isolationRest = 90
+
     var body: some View {
         List {
             ForEach(sortedExercises) { logged in
                 Section {
                     ForEach(sortedSets(of: logged)) { set in
-                        LoggedSetRow(set: set)
+                        LoggedSetRow(set: set, onComplete: { startRest(for: set) })
                     }
                     Button {
                         WorkoutSessionBuilder.addSet(to: logged, in: context)
@@ -36,6 +40,10 @@ struct WorkoutSessionView: View {
             }
         }
         .frostedList()
+        .onAppear {
+            PhoneSessionManager.shared.activeSession = session
+            PhoneSessionManager.shared.send(PhoneSessionManager.makeWorkout(from: session))
+        }
         .navigationTitle(session.date.formatted(date: .abbreviated, time: .shortened))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -47,6 +55,51 @@ struct WorkoutSessionView: View {
                 .bold()
             }
         }
+        .onDisappear { restTimer.stop() }
+        .safeAreaInset(edge: .bottom) { timerBar }
+    }
+
+    /// Bottom bar: session elapsed time (always) + rest countdown when active.
+    private var timerBar: some View {
+        HStack(spacing: 12) {
+            TimelineView(.periodic(from: session.date, by: 1)) { context in
+                Label(elapsed(context.date), systemImage: "clock")
+                    .monospacedDigit()
+            }
+            Spacer()
+            if restTimer.isRunning {
+                Label(hms(restTimer.secondsRemaining), systemImage: "timer")
+                    .monospacedDigit()
+                    .foregroundStyle(.orange)
+                Button("Skip") { restTimer.stop() }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+            }
+        }
+        .font(.subheadline)
+        .padding(.horizontal)
+        .padding(.vertical, 8)
+        .background(.ultraThinMaterial)
+    }
+
+    /// Starts the rest countdown after a set is completed, using the
+    /// compound/isolation duration from Settings.
+    private func startRest(for set: LoggedSet) {
+        let compound = set.loggedExercise?.exercise?.isCompound ?? true
+        restTimer.onFinish = {}
+        restTimer.start(seconds: compound ? compoundRest : isolationRest)
+    }
+
+    private func elapsed(_ now: Date) -> String {
+        hms(Int(now.timeIntervalSince(session.date)))
+    }
+
+    private func hms(_ seconds: Int) -> String {
+        let s = max(0, seconds)
+        if s >= 3600 {
+            return String(format: "%d:%02d:%02d", s / 3600, (s % 3600) / 60, s % 60)
+        }
+        return String(format: "%d:%02d", s / 60, s % 60)
     }
 
     private var sortedExercises: [LoggedExercise] {
@@ -62,6 +115,7 @@ struct WorkoutSessionView: View {
 private struct LoggedSetRow: View {
 
     @Bindable var set: LoggedSet
+    var onComplete: () -> Void = {}
     @Environment(\.modelContext) private var context
 
     var body: some View {
@@ -129,6 +183,7 @@ private struct LoggedSetRow: View {
             Button {
                 set.isCompleted.toggle()
                 set.completedAt = set.isCompleted ? .now : nil
+                if set.isCompleted { onComplete() }   // kick off the rest timer
             } label: {
                 Image(systemName: set.isCompleted ? "checkmark.circle.fill" : "circle")
                     .font(.title3)

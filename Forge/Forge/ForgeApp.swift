@@ -51,6 +51,9 @@ struct ForgeApp: App {
         // exercises the line above just inserted. Also idempotent — it only
         // runs when no program exists yet.
         ProgramSeeder.seedIfNeeded(container.mainContext)
+
+        // Activate the phone↔watch link at launch.
+        _ = PhoneSessionManager.shared
     }
 
     var body: some Scene {

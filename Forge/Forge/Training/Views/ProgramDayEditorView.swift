@@ -42,7 +42,8 @@ struct ProgramDayEditorView: View {
 
             Section(day.format.isConditioning ? "Exercises (each round)" : "Exercises") {
                 ForEach(sortedExercises) { prescription in
-                    ProgramExerciseEditRow(programExercise: prescription)
+                    ProgramExerciseEditRow(programExercise: prescription,
+                                           isConditioning: day.format.isConditioning)
                 }
                 .onDelete(perform: deleteExercises)
                 .onMove(perform: moveExercises)
@@ -137,22 +138,41 @@ struct ProgramDayEditorView: View {
 private struct ProgramExerciseEditRow: View {
 
     @Bindable var programExercise: ProgramExercise
+    var isConditioning: Bool = false
+
+    /// For conditioning we track a single rep target; keep low == high in sync.
+    private var singleReps: Binding<Int> {
+        Binding(
+            get: { programExercise.repRangeLow },
+            set: {
+                programExercise.repRangeLow = $0
+                programExercise.repRangeHigh = $0
+            }
+        )
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(programExercise.exercise?.name ?? "Exercise")
                 .font(.headline)
 
-            Stepper("Sets: \(programExercise.targetSets)",
-                    value: $programExercise.targetSets, in: 1...10)
+            if isConditioning {
+                // Circuit / AMRAP: just reps per round, no sets, no range.
+                Stepper("Reps: \(programExercise.repRangeLow)", value: singleReps, in: 1...100)
+                    .font(.subheadline)
+            } else {
+                // Strength: sets + a rep range for progressive overload.
+                Stepper("Sets: \(programExercise.targetSets)",
+                        value: $programExercise.targetSets, in: 1...10)
 
-            HStack(spacing: 12) {
-                Stepper("Reps \(programExercise.repRangeLow)",
-                        value: $programExercise.repRangeLow, in: 1...50)
-                Stepper("to \(programExercise.repRangeHigh)",
-                        value: $programExercise.repRangeHigh, in: 1...50)
+                HStack(spacing: 12) {
+                    Stepper("Reps \(programExercise.repRangeLow)",
+                            value: $programExercise.repRangeLow, in: 1...50)
+                    Stepper("to \(programExercise.repRangeHigh)",
+                            value: $programExercise.repRangeHigh, in: 1...50)
+                }
+                .font(.subheadline)
             }
-            .font(.subheadline)
         }
         .padding(.vertical, 4)
     }

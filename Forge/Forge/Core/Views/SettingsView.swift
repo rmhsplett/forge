@@ -1,6 +1,8 @@
 import SwiftUI
+import SwiftData
 import PhotosUI
 import UIKit
+import UniformTypeIdentifiers
 
 /// App settings: the global auto-suggest toggle and appearance choices.
 /// Presented as a sheet from the Program tab's gear button.
@@ -10,6 +12,8 @@ struct SettingsView: View {
     @Environment(\.modelContext) private var context
 
     @AppStorage("autoSuggestEnabled") private var autoSuggestEnabled = true
+    @AppStorage("compoundRestSeconds") private var compoundRest = 120
+    @AppStorage("isolationRestSeconds") private var isolationRest = 90
     @AppStorage(ThemeStorage.accentKey) private var accentRaw = AccentTheme.blue.rawValue
     @AppStorage(ThemeStorage.fontKey) private var fontRaw = AppFontDesign.standard.rawValue
     @AppStorage(BackgroundStore.hasImageKey) private var hasBackground = false
@@ -17,6 +21,8 @@ struct SettingsView: View {
 
     @State private var pickerItem: PhotosPickerItem?
     @State private var editingImage: PickedImage?
+    @State private var importingBackup = false
+    @State private var importMessage: String?
 
     var body: some View {
         NavigationStack {
@@ -27,6 +33,15 @@ struct SettingsView: View {
                     Text("Training")
                 } footer: {
                     Text("Pre-fills each set with a double-progression suggestion based on your last session.")
+                }
+
+                Section {
+                    Stepper("Compound: \(compoundRest)s", value: $compoundRest, in: 15...300, step: 15)
+                    Stepper("Isolation: \(isolationRest)s", value: $isolationRest, in: 15...300, step: 15)
+                } header: {
+                    Text("Rest timer")
+                } footer: {
+                    Text("Starts automatically when you complete a set. Multi-joint lifts use the compound time; single-joint moves use the isolation time.")
                 }
 
                 if HealthKitService.isAvailable {
@@ -41,6 +56,18 @@ struct SettingsView: View {
                     } footer: {
                         Text("Imports your weigh-ins from Health and saves new ones back to it.")
                     }
+                }
+
+                Section {
+                    Button {
+                        importingBackup = true
+                    } label: {
+                        Label("Import from FORGE web app", systemImage: "square.and.arrow.down")
+                    }
+                } header: {
+                    Text("Data")
+                } footer: {
+                    Text("Import a forge-backup .json exported from the FORGE web app. Your sessions and weigh-ins are added, with duplicates skipped.")
                 }
 
                 Section("Appearance") {
@@ -112,6 +139,33 @@ struct SettingsView: View {
                     BackgroundStore.save(data)
                 }
             }
+            .fileImporter(isPresented: $importingBackup, allowedContentTypes: [.json]) { result in
+                if case .success(let url) = result { importBackup(from: url) }
+            }
+            .alert("Import", isPresented: Binding(
+                get: { importMessage != nil },
+                set: { if !$0 { importMessage = nil } }
+            )) {
+                Button("OK") { importMessage = nil }
+            } message: {
+                Text(importMessage ?? "")
+            }
+        }
+    }
+
+    private func importBackup(from url: URL) {
+        let scoped = url.startAccessingSecurityScopedResource()
+        defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+        guard let data = try? Data(contentsOf: url) else {
+            importMessage = "Couldn't read that file."
+            return
+        }
+        let summary = PWAImporter.importBackup(data, into: context)
+        if summary.failed {
+            importMessage = "That doesn't look like a FORGE backup .json."
+        } else {
+            let s = summary.sessions, w = summary.weighIns
+            importMessage = "Imported \(s) session\(s == 1 ? "" : "s") and \(w) weigh-in\(w == 1 ? "" : "s")."
         }
     }
 

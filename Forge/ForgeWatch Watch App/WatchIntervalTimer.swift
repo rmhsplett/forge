@@ -1,28 +1,24 @@
 //
-//  IntervalTimer.swift
-//  Forge
+//  WatchIntervalTimer.swift
+//  ForgeWatch (watchOS target)
 //
-//  A simple 1-second countdown used by conditioning workouts: the rest timer
-//  between circuit rounds and the AMRAP time cap. Fires a sound + haptic
-//  "alarm" when it reaches zero. Plain Timer on the main run loop — no async.
+//  Countdown for the wrist: rest between circuit rounds / after a set, and the
+//  AMRAP time cap. Plays a watch haptic when it reaches zero.
 //
 
-import SwiftUI
+import Foundation
 import Combine
-import UIKit
-import AudioToolbox
+import WatchKit
 
-final class IntervalTimer: ObservableObject {
+final class WatchIntervalTimer: ObservableObject {
 
     @Published var secondsRemaining = 0
     @Published var isRunning = false
 
-    /// Called when the countdown reaches zero.
     var onFinish: (() -> Void)?
 
     private var timer: Timer?
 
-    /// Starts (or restarts) a countdown from `seconds`.
     func start(seconds: Int) {
         stop()
         guard seconds > 0 else { onFinish?(); return }
@@ -35,7 +31,7 @@ final class IntervalTimer: ObservableObject {
                 self.isRunning = false
                 tick.invalidate()
                 self.timer = nil
-                self.alarm()
+                WKInterfaceDevice.current().play(.notification)
                 self.onFinish?()
             }
         }
@@ -45,11 +41,5 @@ final class IntervalTimer: ObservableObject {
         timer?.invalidate()
         timer = nil
         isRunning = false
-    }
-
-    /// Audible + haptic alert (e.g. rest is over / time cap reached).
-    func alarm() {
-        AudioServicesPlaySystemSound(1005)
-        UINotificationFeedbackGenerator().notificationOccurred(.success)
     }
 }

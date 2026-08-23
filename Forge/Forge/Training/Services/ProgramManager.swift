@@ -66,6 +66,11 @@ enum ProgramManager {
             repRangeHigh: exercise.defaultRepRangeHigh,
             exercise: exercise
         )
+        // Conditioning uses a single rep target (no range).
+        if day.format.isConditioning {
+            prescription.repRangeHigh = prescription.repRangeLow
+        }
+
         prescription.programDay = day
         day.exercises.append(prescription)
         try? context.save()
