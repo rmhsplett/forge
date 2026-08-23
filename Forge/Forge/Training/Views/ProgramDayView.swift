@@ -13,9 +13,20 @@ struct ProgramDayView: View {
 
     // Holds the session we just started so we can navigate into it.
     @State private var activeSession: WorkoutSession?
+    @State private var viewingPDF = false
 
     var body: some View {
         List {
+            if day.routinePDF != nil {
+                Section {
+                    Button {
+                        viewingPDF = true
+                    } label: {
+                        Label(day.routinePDFName ?? "View routine PDF", systemImage: "doc.richtext")
+                    }
+                }
+            }
+
             if !day.warmUpChecklist.isEmpty {
                 Section("Warm-up") {
                     ForEach(day.warmUpChecklist, id: \.self) { item in
@@ -43,15 +54,32 @@ struct ProgramDayView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
-                    activeSession = WorkoutSessionBuilder.startSession(from: day, in: context, autoSuggestEnabled: autoSuggestEnabled)
+                    start()
                 } label: {
                     Label("Start Workout", systemImage: "play.fill")
                 }
             }
         }
-        // Pushes the live logging screen once a session has been created.
+        // Pushes the right live logger (strength vs conditioning) once started.
         .navigationDestination(item: $activeSession) { session in
-            WorkoutSessionView(session: session)
+            if session.format.isConditioning {
+                ConditioningSessionView(session: session)
+            } else {
+                WorkoutSessionView(session: session)
+            }
+        }
+        .sheet(isPresented: $viewingPDF) {
+            if let data = day.routinePDF {
+                PDFViewerSheet(data: data, title: day.name.isEmpty ? "Routine" : day.name)
+            }
+        }
+    }
+
+    private func start() {
+        if day.format.isConditioning {
+            activeSession = WorkoutSessionBuilder.startConditioning(from: day, in: context)
+        } else {
+            activeSession = WorkoutSessionBuilder.startSession(from: day, in: context, autoSuggestEnabled: autoSuggestEnabled)
         }
     }
 

@@ -1,14 +1,17 @@
 import SwiftUI
 import SwiftData
+import UniformTypeIdentifiers
 
 /// Edit one day: rename it, add exercises from the library, reorder/delete,
-/// and set each exercise's target sets and rep range.
+/// set each exercise's target sets and rep range, and attach a routine PDF.
 struct ProgramDayEditorView: View {
 
     @Bindable var day: ProgramDay
     @Environment(\.modelContext) private var context
 
     @State private var showingPicker = false
+    @State private var importingPDF = false
+    @State private var viewingPDF = false
 
     private var sortedExercises: [ProgramExercise] {
         day.exercises.sorted { $0.order < $1.order }
@@ -20,7 +23,24 @@ struct ProgramDayEditorView: View {
                 TextField("e.g. Upper A", text: $day.name)
             }
 
-            Section("Exercises") {
+            Section("Format") {
+                Picker("Type", selection: $day.format) {
+                    ForEach(WorkoutFormat.allCases) { format in
+                        Text(format.label).tag(format)
+                    }
+                }
+                if day.format == .circuit {
+                    Stepper("Rounds: \(day.rounds)", value: $day.rounds, in: 1...20)
+                    Stepper("Rest between rounds: \(day.restBetweenRoundsSeconds)s",
+                            value: $day.restBetweenRoundsSeconds, in: 0...300, step: 15)
+                }
+                if day.format == .amrap {
+                    Stepper("Time cap: \(day.timeCapSeconds / 60) min",
+                            value: $day.timeCapSeconds, in: 60...3600, step: 60)
+                }
+            }
+
+            Section(day.format.isConditioning ? "Exercises (each round)" : "Exercises") {
                 ForEach(sortedExercises) { prescription in
                     ProgramExerciseEditRow(programExercise: prescription)
                 }
@@ -33,6 +53,29 @@ struct ProgramDayEditorView: View {
                     Label("Add exercise", systemImage: "plus")
                 }
             }
+
+            Section("Routine PDF") {
+                if day.routinePDF != nil {
+                    Button {
+                        viewingPDF = true
+                    } label: {
+                        Label(day.routinePDFName ?? "View PDF", systemImage: "doc.richtext")
+                    }
+                    Button(role: .destructive) {
+                        day.routinePDF = nil
+                        day.routinePDFName = nil
+                        try? context.save()
+                    } label: {
+                        Label("Remove PDF", systemImage: "trash")
+                    }
+                } else {
+                    Button {
+                        importingPDF = true
+                    } label: {
+                        Label("Attach PDF", systemImage: "doc.badge.plus")
+                    }
+                }
+            }
         }
         .navigationTitle(day.name.isEmpty ? "Day" : day.name)
         .navigationBarTitleDisplayMode(.inline)
@@ -41,6 +84,26 @@ struct ProgramDayEditorView: View {
             ExercisePickerView { exercise in
                 ProgramManager.addExercise(exercise, to: day, in: context)
             }
+        }
+        .sheet(isPresented: $viewingPDF) {
+            if let data = day.routinePDF {
+                PDFViewerSheet(data: data, title: day.name.isEmpty ? "Routine" : day.name)
+            }
+        }
+        .fileImporter(isPresented: $importingPDF, allowedContentTypes: [.pdf]) { result in
+            if case .success(let url) = result {
+                attachPDF(from: url)
+            }
+        }
+    }
+
+    private func attachPDF(from url: URL) {
+        let scoped = url.startAccessingSecurityScopedResource()
+        defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+        if let data = try? Data(contentsOf: url) {
+            day.routinePDF = data
+            day.routinePDFName = url.lastPathComponent
+            try? context.save()
         }
     }
 

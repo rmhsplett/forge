@@ -62,6 +62,18 @@ enum WorkoutSessionBuilder {
         return session
     }
 
+    /// Starts a conditioning (circuit / AMRAP) session. No pre-filled sets —
+    /// the round's exercises are read from the program day; results are rounds
+    /// completed + duration, logged when the timer finishes.
+    @discardableResult
+    static func startConditioning(from day: ProgramDay, in context: ModelContext) -> WorkoutSession {
+        let session = WorkoutSession(date: .now, programDay: day)
+        session.format = day.format
+        context.insert(session)
+        try? context.save()
+        return session
+    }
+
     /// Appends one more empty set to a logged exercise (the "＋ Add set"
     /// action). Order continues from the current highest.
     static func addSet(to loggedExercise: LoggedExercise, in context: ModelContext) {

@@ -49,6 +49,12 @@ struct AddBodyWeightSheet: View {
         let entry = BodyWeightEntry(date: date, weightKg: weightKg, source: .manual)
         context.insert(entry)
         try? context.save()
+
+        // Mirror the weigh-in to Apple Health (no-op if not authorized).
+        let kg = weightKg
+        let when = date
+        Task { await HealthKitService.saveBodyMass(kg, date: when) }
+
         dismiss()
     }
 }

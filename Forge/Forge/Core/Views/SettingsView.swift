@@ -7,6 +7,7 @@ import UIKit
 struct SettingsView: View {
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var context
 
     @AppStorage("autoSuggestEnabled") private var autoSuggestEnabled = true
     @AppStorage(ThemeStorage.accentKey) private var accentRaw = AccentTheme.blue.rawValue
@@ -26,6 +27,20 @@ struct SettingsView: View {
                     Text("Training")
                 } footer: {
                     Text("Pre-fills each set with a double-progression suggestion based on your last session.")
+                }
+
+                if HealthKitService.isAvailable {
+                    Section {
+                        Button {
+                            connectHealth()
+                        } label: {
+                            Label("Sync body weight with Apple Health", systemImage: "heart.fill")
+                        }
+                    } header: {
+                        Text("Apple Health")
+                    } footer: {
+                        Text("Imports your weigh-ins from Health and saves new ones back to it.")
+                    }
                 }
 
                 Section("Appearance") {
@@ -96,6 +111,14 @@ struct SettingsView: View {
                 BackgroundEditorView(image: picked.image) { data in
                     BackgroundStore.save(data)
                 }
+            }
+        }
+    }
+
+    private func connectHealth() {
+        Task {
+            if await HealthKitService.requestAuthorization() {
+                await HealthKitService.importWeights(into: context)
             }
         }
     }

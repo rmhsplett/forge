@@ -11,8 +11,13 @@ struct SessionDetailView: View {
         List {
             Section {
                 summaryRow("Date", session.date.formatted(date: .complete, time: .shortened))
-                summaryRow("Completed sets", "\(session.completedSetCount)")
-                summaryRow("Total volume", "\(session.totalVolumeKg.formatted(.number.precision(.fractionLength(0)))) kg")
+                if session.format.isConditioning {
+                    summaryRow("Format", session.format.label)
+                    summaryRow("Rounds completed", "\(session.roundsCompleted ?? 0)")
+                } else {
+                    summaryRow("Completed sets", "\(session.completedSetCount)")
+                    summaryRow("Total volume", "\(session.totalVolumeKg.formatted(.number.precision(.fractionLength(0)))) kg")
+                }
                 if let duration = session.durationText {
                     summaryRow("Duration", duration)
                 }

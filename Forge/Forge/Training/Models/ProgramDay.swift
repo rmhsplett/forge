@@ -26,6 +26,26 @@ final class ProgramDay {
     var warmUpChecklist: [String] = []
     var coolDownChecklist: [String] = []
 
+    /// Optional attached routine PDF (e.g. a kettlebell circuit sheet or an
+    /// exercise-explanation handout) and its original file name. Stored via
+    /// external storage so the blob stays out of the main store; optional so
+    /// it's CloudKit-safe and a lightweight migration.
+    var routinePDFName: String?
+
+    @Attribute(.externalStorage) var routinePDF: Data?
+
+    // MARK: Format (strength vs conditioning)
+
+    /// How this day is trained. Drives which logger opens on Start.
+    var format: WorkoutFormat = WorkoutFormat.strength
+
+    /// Circuit: number of rounds and rest between them (seconds).
+    var rounds: Int = 5
+    var restBetweenRoundsSeconds: Int = 60
+
+    /// AMRAP: time cap in seconds (default 12 minutes).
+    var timeCapSeconds: Int = 720
+
     // MARK: Relationships
 
     /// Back-reference to the owning Program. Optional because CloudKit

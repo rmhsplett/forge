@@ -27,6 +27,13 @@ final class WorkoutSession {
     /// have it. Int bpm is plenty of precision.
     var avgHeartRate: Int?
 
+    /// Format this session was performed as (copied from the day at start).
+    var format: WorkoutFormat = WorkoutFormat.strength
+
+    /// Rounds completed, for a conditioning (circuit/AMRAP) session. Nil for
+    /// strength sessions, which track sets instead.
+    var roundsCompleted: Int?
+
     // MARK: Relationships
 
     /// The program day this session was performed from, if any. OPTIONAL by

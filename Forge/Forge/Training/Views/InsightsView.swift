@@ -112,6 +112,7 @@ struct InsightsView: View {
                         .interpolationMethod(.catmullRom)
                     }
                 }
+                .chartYScale(domain: weightDomain)
                 .chartYAxisLabel("kg")
                 .frame(height: 200)
 
@@ -142,6 +143,27 @@ struct InsightsView: View {
     /// Trailing 7-day average at each weigh-in — smooths the daily bounce so
     /// the real trend (key for recomp: weight flat/down while lifts climb) is
     /// readable.
+    /// Y-axis range that hugs the actual weigh-ins tightly (±2 kg, whole
+    /// numbers) so slow, 1–2 kg movements are clearly visible instead of being
+    /// flattened. Recomputes as weights change, so the window follows you.
+    /// A minimum 6 kg window keeps it from looking cramped when readings are
+    /// nearly identical.
+    private var weightDomain: ClosedRange<Double> {
+        let values = weights.map(\.weightKg)
+        guard let minValue = values.min(), let maxValue = values.max() else {
+            return 60...110
+        }
+        var lower = (minValue - 2).rounded(.down)
+        var upper = (maxValue + 2).rounded(.up)
+        if upper - lower < 6 {
+            let mid = (minValue + maxValue) / 2
+            lower = (mid - 3).rounded(.down)
+            upper = (mid + 3).rounded(.up)
+        }
+        lower = max(0, lower)
+        return lower...upper
+    }
+
     private var movingAverage: [TrendPoint] {
         let window: TimeInterval = 7 * 24 * 3600
         return weights.map { entry in

@@ -63,8 +63,12 @@ private struct SessionSummaryRow: View {
                     .foregroundStyle(.secondary)
             }
             HStack(spacing: 8) {
-                Label("\(session.completedSetCount) sets", systemImage: "checkmark.circle")
-                Label(volumeText, systemImage: "scalemass")
+                if session.format.isConditioning {
+                    Label("\(session.roundsCompleted ?? 0) rounds", systemImage: "arrow.triangle.2.circlepath")
+                } else {
+                    Label("\(session.completedSetCount) sets", systemImage: "checkmark.circle")
+                    Label(volumeText, systemImage: "scalemass")
+                }
                 if let duration = session.durationText {
                     Label(duration, systemImage: "clock")
                 }
