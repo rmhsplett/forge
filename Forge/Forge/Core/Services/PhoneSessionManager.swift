@@ -48,6 +48,11 @@ final class PhoneSessionManager: NSObject {
     static func makeWorkout(from session: WorkoutSession) -> WatchWorkout {
         let day = session.programDay
 
+        // Mirror the phone's rest-timer settings so the watch counts down the
+        // exact same durations (compound vs. isolation) after each set.
+        let compoundRest = UserDefaults.standard.object(forKey: "compoundRestSeconds") as? Int ?? 120
+        let isolationRest = UserDefaults.standard.object(forKey: "isolationRestSeconds") as? Int ?? 90
+
         let exercises: [WatchExercise]
         if session.format.isConditioning {
             exercises = (day?.exercises ?? [])
@@ -68,7 +73,8 @@ final class PhoneSessionManager: NSObject {
                         name: $0.exercise?.name ?? "Exercise",
                         targetSets: $0.sets.count,
                         repLow: $0.programExercise?.repRangeLow ?? 0,
-                        repHigh: $0.programExercise?.repRangeHigh ?? 0
+                        repHigh: $0.programExercise?.repRangeHigh ?? 0,
+                        restSeconds: ($0.exercise?.isCompound ?? false) ? compoundRest : isolationRest
                     )
                 }
         }

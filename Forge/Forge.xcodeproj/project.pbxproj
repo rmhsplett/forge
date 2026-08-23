@@ -807,8 +807,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "ForgeWatch-Watch-App-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = ForgeWatch;
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "";
-				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Read your heart rate during workouts.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Save your workout to Apple Health.";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.github.rmhsplett.forge;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -844,8 +844,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "ForgeWatch-Watch-App-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = ForgeWatch;
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "";
-				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Read your heart rate during workouts.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Save your workout to Apple Health.";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.github.rmhsplett.forge;
 				LD_RUNPATH_SEARCH_PATHS = (

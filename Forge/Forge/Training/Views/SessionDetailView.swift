@@ -22,6 +22,7 @@ struct SessionDetailView: View {
                     summaryRow("Duration", duration)
                 }
             }
+            .listRowBackground(PanelBackground())
 
             ForEach(sortedExercises) { logged in
                 Section(logged.exercise?.name ?? "Exercise") {
@@ -54,9 +55,11 @@ struct SessionDetailView: View {
                             }
                         }
                     }
+                    .listRowBackground(PanelBackground())
                 }
             }
         }
+        .frostedList()
         .navigationTitle(session.displayTitle)
         .navigationBarTitleDisplayMode(.inline)
     }

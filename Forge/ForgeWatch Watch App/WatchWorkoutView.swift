@@ -82,7 +82,7 @@ struct WatchWorkoutView: View {
                     ForEach(0..<max(exercise.targetSets, 1), id: \.self) { setIndex in
                         let key = "\(index)-\(setIndex)"
                         Button {
-                            toggle(key)
+                            toggle(key, restSeconds: exercise.restSeconds)
                         } label: {
                             HStack {
                                 Text("Set \(setIndex + 1)")
@@ -119,14 +119,16 @@ struct WatchWorkoutView: View {
         .background(Color.black)
     }
 
-    private func toggle(_ key: String) {
+    private func toggle(_ key: String, restSeconds: Int) {
         if completedSets.contains(key) {
             completedSets.remove(key)
         } else {
             completedSets.insert(key)
             WKInterfaceDevice.current().play(.click)
             rest.onFinish = {}
-            rest.start(seconds: 90)   // default wrist rest; the phone owns exact durations
+            // Mirror the phone's exact compound/isolation rest; fall back to 90s
+            // only if the phone sent nothing (older payloads).
+            rest.start(seconds: restSeconds > 0 ? restSeconds : 90)
         }
     }
 

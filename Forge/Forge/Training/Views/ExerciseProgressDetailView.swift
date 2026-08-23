@@ -43,6 +43,7 @@ struct ExerciseProgressDetailView: View {
                     .frame(height: 220)
                     .chartYAxisLabel("kg")
                 }
+                .listRowBackground(PanelBackground())
 
                 Section("Personal best") {
                     if let best = series.max(by: { $0.estimatedOneRepMax < $1.estimatedOneRepMax }) {
@@ -56,6 +57,7 @@ struct ExerciseProgressDetailView: View {
                     }
                     LabeledContent("PRs hit", value: "\(prPoints.count)")
                 }
+                .listRowBackground(PanelBackground())
 
                 Section("Sessions") {
                     ForEach(series.reversed()) { point in
@@ -77,8 +79,10 @@ struct ExerciseProgressDetailView: View {
                         }
                     }
                 }
+                .listRowBackground(PanelBackground())
             }
         }
+        .frostedList()
         .navigationTitle(exercise.name)
         .navigationBarTitleDisplayMode(.inline)
     }

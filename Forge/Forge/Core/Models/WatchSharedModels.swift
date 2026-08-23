@@ -34,6 +34,9 @@ struct WatchExercise: Codable, Identifiable {
     var targetSets: Int
     var repLow: Int
     var repHigh: Int
+    /// Rest to run after completing a set of THIS exercise, mirroring the phone's
+    /// compound/isolation rest settings. 0 = fall back to the workout default.
+    var restSeconds: Int = 0
 }
 
 /// Result sent watch → phone when a workout finishes on the wrist.

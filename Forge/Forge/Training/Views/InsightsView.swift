@@ -67,8 +67,10 @@ struct InsightsView: View {
             }
         } header: {
             Text("This week's volume")
+                .captionOverPhoto()
         } footer: {
             Text("Hard sets per muscle. Green = 10–20/week range, orange = under, yellow = over. Secondary muscles count half; a Left/Right pair counts once.")
+                .captionOverPhoto()
         }
     }
 
@@ -133,9 +135,11 @@ struct InsightsView: View {
             }
         } header: {
             Text("Body weight")
+                .captionOverPhoto()
         } footer: {
             if !weights.isEmpty {
                 Text("Grey dots are weigh-ins; the accent line is a 7-day average that smooths daily noise.")
+                    .captionOverPhoto()
             }
         }
     }

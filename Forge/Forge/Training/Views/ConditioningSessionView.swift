@@ -27,6 +27,7 @@ struct ConditioningSessionView: View {
     var body: some View {
         List {
             Section { header.frame(maxWidth: .infinity) }
+                .listRowBackground(PanelBackground())
 
             Section("Each round") {
                 ForEach(exercises) { pe in
@@ -39,7 +40,9 @@ struct ConditioningSessionView: View {
                     }
                 }
             }
+            .listRowBackground(PanelBackground())
         }
+        .frostedList()
         .navigationTitle(day?.name ?? "Workout")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

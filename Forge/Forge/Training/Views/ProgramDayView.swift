@@ -25,6 +25,7 @@ struct ProgramDayView: View {
                         Label(day.routinePDFName ?? "View routine PDF", systemImage: "doc.richtext")
                     }
                 }
+                .listRowBackground(PanelBackground())
             }
 
             if !day.warmUpChecklist.isEmpty {
@@ -33,6 +34,7 @@ struct ProgramDayView: View {
                         Label(item, systemImage: "flame")
                     }
                 }
+                .listRowBackground(PanelBackground())
             }
 
             Section("Exercises") {
@@ -40,6 +42,7 @@ struct ProgramDayView: View {
                     ProgramExerciseRow(programExercise: pe)
                 }
             }
+            .listRowBackground(PanelBackground())
 
             if !day.coolDownChecklist.isEmpty {
                 Section("Cool-down") {
@@ -47,8 +50,10 @@ struct ProgramDayView: View {
                         Label(item, systemImage: "wind")
                     }
                 }
+                .listRowBackground(PanelBackground())
             }
         }
+        .frostedList()
         .navigationTitle(day.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

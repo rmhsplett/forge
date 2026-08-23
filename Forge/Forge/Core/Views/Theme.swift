@@ -101,6 +101,30 @@ struct PanelBackground: View {
     }
 }
 
+/// Section headers and footers sit OUTSIDE the frosted panels, directly over
+/// the background photo, so their default faint-grey styling can be unreadable
+/// on a busy image. This brightens the text and adds a soft dark shadow for
+/// contrast when a photo is set; a no-op (normal look) otherwise.
+struct CaptionOverPhotoModifier: ViewModifier {
+    @AppStorage(BackgroundStore.hasImageKey) private var hasImage = false
+
+    func body(content: Content) -> some View {
+        if hasImage {
+            content
+                .foregroundStyle(.white.opacity(0.92))
+                .shadow(color: .black.opacity(0.75), radius: 3, y: 1)
+        } else {
+            content
+        }
+    }
+}
+
+extension View {
+    /// Apply to a Section `header:` / `footer:` Text so it stays legible over a
+    /// background photo (they render outside the frosted panels).
+    func captionOverPhoto() -> some View { modifier(CaptionOverPhotoModifier()) }
+}
+
 /// Central keys + small resolvers so views don't repeat the AppStorage keys.
 enum ThemeStorage {
     static let accentKey = "accentTheme"
