@@ -53,6 +53,11 @@ enum ExerciseDisplayType: String, Codable, CaseIterable {
     case kettlebell
     case running
     case sprint
+    case rowing
+    case skiErg
+    case stairmaster
+    case stationaryBike
+    case elliptical
 
     /// Human-friendly label for pickers (rawValue has camelCase we don't want
     /// to show).
@@ -68,6 +73,11 @@ enum ExerciseDisplayType: String, Codable, CaseIterable {
         case .kettlebell: return "Kettlebell"
         case .running: return "Running"
         case .sprint: return "Sprint"
+        case .rowing: return "Rowing"
+        case .skiErg: return "Ski Erg"
+        case .stairmaster: return "Stairmaster"
+        case .stationaryBike: return "Stationary Bike"
+        case .elliptical: return "Elliptical"
         }
     }
 
@@ -85,15 +95,22 @@ enum ExerciseDisplayType: String, Codable, CaseIterable {
         case .kettlebell: return "figure.cross.training"
         case .running: return "figure.run"
         case .sprint: return "figure.run"   // ExerciseIconView adds motion stripes
+        case .rowing: return "figure.rower"
+        case .skiErg: return "figure.skiing.nordic"
+        case .stairmaster: return "figure.stair.stepper"
+        case .stationaryBike: return "figure.indoor.cycle"
+        case .elliptical: return "figure.elliptical"
         }
     }
 
-    /// Cardio movements (Running / Sprint) — logged by distance, not weight ×
-    /// reps, and excluded from strength stats.
+    /// Cardio movements — logged by distance, not weight × reps, and excluded
+    /// from strength stats. Grouped into their own library section.
     var isCardio: Bool {
         switch self {
-        case .running, .sprint: return true
-        default: return false
+        case .running, .sprint, .rowing, .skiErg, .stairmaster, .stationaryBike, .elliptical:
+            return true
+        default:
+            return false
         }
     }
 }

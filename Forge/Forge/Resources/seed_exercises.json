@@ -1218,6 +1218,86 @@
         100
       ],
       "notes": null
+    },
+    {
+      "id": "rowing",
+      "name": "Rowing",
+      "primaryMuscle": "legs",
+      "secondaryMuscles": [],
+      "displayType": "rowing",
+      "isUnilateral": false,
+      "defaultRestSeconds": 60,
+      "progressionIncrementKg": 0.0,
+      "barWeightKg": null,
+      "defaultRepRange": [
+        500,
+        500
+      ],
+      "notes": null
+    },
+    {
+      "id": "ski_erg",
+      "name": "Ski Erg",
+      "primaryMuscle": "legs",
+      "secondaryMuscles": [],
+      "displayType": "skiErg",
+      "isUnilateral": false,
+      "defaultRestSeconds": 60,
+      "progressionIncrementKg": 0.0,
+      "barWeightKg": null,
+      "defaultRepRange": [
+        500,
+        500
+      ],
+      "notes": null
+    },
+    {
+      "id": "stairmaster",
+      "name": "Stairmaster",
+      "primaryMuscle": "legs",
+      "secondaryMuscles": [],
+      "displayType": "stairmaster",
+      "isUnilateral": false,
+      "defaultRestSeconds": 60,
+      "progressionIncrementKg": 0.0,
+      "barWeightKg": null,
+      "defaultRepRange": [
+        200,
+        200
+      ],
+      "notes": null
+    },
+    {
+      "id": "stationary_bike",
+      "name": "Stationary Bike",
+      "primaryMuscle": "legs",
+      "secondaryMuscles": [],
+      "displayType": "stationaryBike",
+      "isUnilateral": false,
+      "defaultRestSeconds": 60,
+      "progressionIncrementKg": 0.0,
+      "barWeightKg": null,
+      "defaultRepRange": [
+        1000,
+        1000
+      ],
+      "notes": null
+    },
+    {
+      "id": "elliptical",
+      "name": "Elliptical",
+      "primaryMuscle": "legs",
+      "secondaryMuscles": [],
+      "displayType": "elliptical",
+      "isUnilateral": false,
+      "defaultRestSeconds": 60,
+      "progressionIncrementKg": 0.0,
+      "barWeightKg": null,
+      "defaultRepRange": [
+        1000,
+        1000
+      ],
+      "notes": null
     }
   ]
 }

@@ -18,9 +18,11 @@ First post-beta fix batch, addressing bugs and polish found in TestFlight.
   completing a round now mirror in real time between phone and watch, with a
   haptic on the wrist when rest ends. Works for strength, circuit, and AMRAP.
   See ADR 0016.
-- **Running & Sprint** cardio exercises for hybrid circuits/AMRAP — logged by
-  distance (metres), with a distinct "runner + speed stripes" icon for Sprint.
-  (Reading real runs from Apple Health is planned as a later feature.)
+- **Cardio exercises** for hybrid circuits/AMRAP, in their own "Cardio" library
+  section, logged by distance (metres): Running, Sprint (custom "runner + speed
+  stripes" icon), Rowing, Ski Erg, Stairmaster, Stationary Bike, and Elliptical,
+  each with its matching icon. (Reading real runs from Apple Health is planned
+  as a later feature.)
 - **Long-press number wheel** — long-press a weight or reps cell for a spinning
   picker, pre-set to the current value, alongside the keyboard.
 - **Progress metric setting** — chart Estimated 1RM or Heaviest weight lifted.

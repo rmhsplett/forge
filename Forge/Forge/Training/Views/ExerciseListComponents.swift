@@ -34,7 +34,9 @@ struct GroupedExerciseSections<Row: View>: View {
 
     var body: some View {
         ForEach(MuscleGroup.allCases, id: \.self) { muscle in
-            let items = exercises.filter { $0.displayType != .kettlebell && $0.primaryMuscle == muscle }
+            let items = exercises.filter {
+                $0.displayType != .kettlebell && !$0.displayType.isCardio && $0.primaryMuscle == muscle
+            }
             if !items.isEmpty {
                 Section(muscle.label) {
                     ForEach(items) { row($0, false) }
@@ -47,6 +49,14 @@ struct GroupedExerciseSections<Row: View>: View {
         if !kettlebell.isEmpty {
             Section("Kettlebell") {
                 ForEach(kettlebell) { row($0, true) }
+                    .listRowBackground(PanelBackground())
+            }
+        }
+
+        let cardio = exercises.filter { $0.displayType.isCardio }
+        if !cardio.isEmpty {
+            Section("Cardio") {
+                ForEach(cardio) { row($0, true) }
                     .listRowBackground(PanelBackground())
             }
         }
