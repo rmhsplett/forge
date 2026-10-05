@@ -34,6 +34,12 @@ final class WorkoutSession {
     /// strength sessions, which track sets instead.
     var roundsCompleted: Int?
 
+    /// How barbell weight was logged for THIS session, stamped at start from
+    /// the user's setting. `false` (default) = per side of the bar, so the
+    /// real total is weight × 2 + bar; `true` = the full weight was typed in.
+    /// Stored per session so changing the setting never reinterprets history.
+    var barbellCombined: Bool = false
+
     // MARK: Relationships
 
     /// The program day this session was performed from, if any. OPTIONAL by

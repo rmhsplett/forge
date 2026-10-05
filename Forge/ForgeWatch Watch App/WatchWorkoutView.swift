@@ -9,6 +9,7 @@
 
 import SwiftUI
 import WatchKit
+import Combine
 
 struct WatchWorkoutView: View {
 
@@ -39,6 +40,39 @@ struct WatchWorkoutView: View {
             await hk.requestAuthorization()
             hk.start()
         }
+        .onReceive(WatchSessionManager.shared.incomingEvents) { event in
+            applyFromPhone(event)
+        }
+    }
+
+    /// Applies a live event from the phone: a set checked off on the phone ticks
+    /// the matching box here and runs the rest (with a haptic at the end); a skip
+    /// clears it. Never re-broadcasts, so there's no echo back to the phone.
+    private func applyFromPhone(_ event: WorkoutSyncEvent) {
+        switch event.kind {
+        case .setCompleted:
+            if let ex = event.exerciseIndex, let si = event.setIndex {
+                completedSets.insert("\(ex)-\(si)")
+            }
+            if !workout.isConditioning {
+                rest.onFinish = {}
+                let s = (event.seconds ?? 0) > 0 ? (event.seconds ?? 90) : 90
+                rest.start(seconds: s)
+            }
+        case .roundCompleted:
+            if let r = event.rounds { completedRounds = r }
+            if workout.format != "amrap" {
+                if completedRounds >= max(workout.rounds, 1) {
+                    finish()
+                } else {
+                    rest.onFinish = {}
+                    let s = (event.seconds ?? 0) > 0 ? (event.seconds ?? workout.restSeconds) : workout.restSeconds
+                    if s > 0 { rest.start(seconds: s) }
+                }
+            }
+        case .restSkipped:
+            rest.stop()
+        }
     }
 
     private var content: some View {
@@ -51,23 +85,27 @@ struct WatchWorkoutView: View {
         }
     }
 
-    /// Pinned status bar: elapsed time (upper-left) + heart rate (upper-right),
-    /// on a frosted background so the list scrolls cleanly underneath it.
+    /// Pinned status row, sharing the top line with the watchOS system clock:
+    /// workout timer (left) + heart rate (center). The top-right is left clear
+    /// for the system clock, which watchOS draws there and apps can't move.
+    /// Slim padding keeps it tight to the top so the list gets more room.
     private var topBar: some View {
-        HStack {
+        HStack(spacing: 6) {
             TimelineView(.periodic(from: startDate, by: 1)) { context in
-                Label(time(Int(context.date.timeIntervalSince(startDate))), systemImage: "clock")
+                Label(time(Int(context.date.timeIntervalSince(startDate))), systemImage: "stopwatch")
                     .monospacedDigit()
             }
-            Spacer()
-            HStack(spacing: 4) {
+            Spacer(minLength: 4)
+            HStack(spacing: 3) {
                 Image(systemName: "heart.fill").foregroundStyle(.red)
                 Text(hk.heartRate > 0 ? "\(Int(hk.heartRate))" : "--").monospacedDigit()
             }
         }
-        .font(.caption)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
+        .font(.caption2)
+        .padding(.leading, 8)
+        .padding(.trailing, 46)   // reserve the corner for the system clock
+        .padding(.top, 1)
+        .padding(.bottom, 3)
         .frame(maxWidth: .infinity)
         .background(Color.black)
     }
@@ -82,7 +120,7 @@ struct WatchWorkoutView: View {
                     ForEach(0..<max(exercise.targetSets, 1), id: \.self) { setIndex in
                         let key = "\(index)-\(setIndex)"
                         Button {
-                            toggle(key, restSeconds: exercise.restSeconds)
+                            toggle(key, exerciseIndex: index, setIndex: setIndex, restSeconds: exercise.restSeconds)
                         } label: {
                             HStack {
                                 Text("Set \(setIndex + 1)")
@@ -103,23 +141,35 @@ struct WatchWorkoutView: View {
     }
 
     private var restBar: some View {
-        HStack {
-            Image(systemName: "timer")
-            Text(time(rest.secondsRemaining)).monospacedDigit()
-            Spacer()
-            Button("Skip") { rest.stop() }
-                .buttonStyle(.plain)
-                .fontWeight(.semibold)
+        HStack(spacing: 8) {
+            HStack(spacing: 4) {
+                Image(systemName: "timer")
+                Text(time(rest.secondsRemaining)).monospacedDigit()
+            }
+            .foregroundStyle(.orange)
+            .font(.caption)
+
+            Spacer(minLength: 0)
+
+            // Large, easy-to-hit Skip button (the old plain text was fidgety).
+            Button {
+                rest.stop()
+                WatchSessionManager.shared.send(WorkoutSyncEvent(kind: .restSkipped, source: "watch"))
+            } label: {
+                Text("Skip")
+                    .fontWeight(.semibold)
+                    .frame(minWidth: 62, minHeight: 30)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.orange)
         }
-        .foregroundStyle(.orange)
-        .font(.caption)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 3)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
         .frame(maxWidth: .infinity)
         .background(Color.black)
     }
 
-    private func toggle(_ key: String, restSeconds: Int) {
+    private func toggle(_ key: String, exerciseIndex: Int, setIndex: Int, restSeconds: Int) {
         if completedSets.contains(key) {
             completedSets.remove(key)
         } else {
@@ -128,7 +178,14 @@ struct WatchWorkoutView: View {
             rest.onFinish = {}
             // Mirror the phone's exact compound/isolation rest; fall back to 90s
             // only if the phone sent nothing (older payloads).
-            rest.start(seconds: restSeconds > 0 ? restSeconds : 90)
+            let seconds = restSeconds > 0 ? restSeconds : 90
+            rest.start(seconds: seconds)
+            // Tell the phone to mark this set complete (at its pre-filled weight)
+            // and run the same rest.
+            WatchSessionManager.shared.send(
+                WorkoutSyncEvent(kind: .setCompleted, exerciseIndex: exerciseIndex,
+                                 setIndex: setIndex, seconds: seconds, source: "watch")
+            )
         }
     }
 
@@ -145,6 +202,8 @@ struct WatchWorkoutView: View {
                     Button {
                         completedRounds += 1
                         WKInterfaceDevice.current().play(.click)
+                        WatchSessionManager.shared.send(
+                            WorkoutSyncEvent(kind: .roundCompleted, rounds: completedRounds, source: "watch"))
                     } label: {
                         Label("+1 Round", systemImage: "plus.circle.fill")
                     }
@@ -198,6 +257,9 @@ struct WatchWorkoutView: View {
     private func roundDone() {
         completedRounds += 1
         WKInterfaceDevice.current().play(.success)
+        WatchSessionManager.shared.send(
+            WorkoutSyncEvent(kind: .roundCompleted, seconds: workout.restSeconds,
+                             rounds: completedRounds, source: "watch"))
         if completedRounds >= max(workout.rounds, 1) {
             finish()
         } else {
@@ -241,7 +303,8 @@ struct WatchWorkoutView: View {
 
     /// Target reps for a set: a single number, or a low–high range.
     private func reps(_ exercise: WatchExercise) -> String {
-        exercise.repLow == exercise.repHigh
+        if exercise.isCardio { return "\(exercise.repLow) m" }
+        return exercise.repLow == exercise.repHigh
             ? "\(exercise.repLow)"
             : "\(exercise.repLow)–\(exercise.repHigh)"
     }

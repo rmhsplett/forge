@@ -31,6 +31,7 @@ enum WorkoutSessionBuilder {
         autoSuggestEnabled: Bool = true
     ) -> WorkoutSession {
         let session = WorkoutSession(date: .now, programDay: day)
+        session.barbellCombined = UserDefaults.standard.bool(forKey: "barbellCombined")
 
         session.exercises = day.exercises
             .sorted { $0.order < $1.order }
@@ -68,6 +69,7 @@ enum WorkoutSessionBuilder {
     @discardableResult
     static func startConditioning(from day: ProgramDay, in context: ModelContext) -> WorkoutSession {
         let session = WorkoutSession(date: .now, programDay: day)
+        session.barbellCombined = UserDefaults.standard.bool(forKey: "barbellCombined")
         session.format = day.format
         context.insert(session)
         try? context.save()

@@ -2,13 +2,18 @@ import SwiftUI
 import SwiftData
 import Charts
 
-/// Full progress detail for one lift: an estimated-1RM line chart with
-/// trophy markers on PR sessions, a personal-best summary, and a session log.
+/// Full progress detail for one lift: a line chart (estimated 1RM or heaviest
+/// weight, per the Settings choice) with trophy markers on PR sessions, a
+/// personal-best summary, and a session log. All weights are the real total
+/// lifted (barbell per-side is counted as weight × 2 + bar).
 struct ExerciseProgressDetailView: View {
 
     let exercise: Exercise
 
-    private var series: [ProgressPoint] { ExerciseProgress.series(for: exercise) }
+    @AppStorage("progressMetric") private var metricRaw = ProgressMetric.e1rm.rawValue
+    private var metric: ProgressMetric { ProgressMetric(rawValue: metricRaw) ?? .e1rm }
+
+    private var series: [ProgressPoint] { ExerciseProgress.series(for: exercise, metric: metric) }
     private var prPoints: [ProgressPoint] { series.filter(\.isPR) }
 
     var body: some View {
@@ -16,12 +21,12 @@ struct ExerciseProgressDetailView: View {
             if series.isEmpty {
                 ContentUnavailableView("No data yet", systemImage: "chart.line.uptrend.xyaxis")
             } else {
-                Section("Estimated 1RM over time") {
+                Section("\(metric.label) over time") {
                     Chart {
                         ForEach(series) { point in
                             LineMark(
                                 x: .value("Date", point.date),
-                                y: .value("e1RM (kg)", point.estimatedOneRepMax)
+                                y: .value("kg", point.value)
                             )
                             .interpolationMethod(.catmullRom)
                             .foregroundStyle(Color.accentColor)
@@ -30,7 +35,7 @@ struct ExerciseProgressDetailView: View {
                         ForEach(prPoints) { point in
                             PointMark(
                                 x: .value("Date", point.date),
-                                y: .value("e1RM (kg)", point.estimatedOneRepMax)
+                                y: .value("kg", point.value)
                             )
                             .foregroundStyle(.yellow)
                             .annotation(position: .top) {
@@ -46,11 +51,11 @@ struct ExerciseProgressDetailView: View {
                 .listRowBackground(PanelBackground())
 
                 Section("Personal best") {
-                    if let best = series.max(by: { $0.estimatedOneRepMax < $1.estimatedOneRepMax }) {
-                        LabeledContent("Est. 1RM") {
+                    if let best = series.max(by: { $0.value < $1.value }) {
+                        LabeledContent(metric == .e1rm ? "Est. 1RM" : "Heaviest") {
                             HStack(spacing: 4) {
                                 Image(systemName: "trophy.fill").font(.caption).foregroundStyle(.yellow)
-                                Text("\(Int(best.estimatedOneRepMax.rounded())) kg").fontWeight(.bold)
+                                Text("\(Int(best.value.rounded())) kg").fontWeight(.bold)
                             }
                         }
                         LabeledContent("Best set", value: "\(best.bestWeightKg.formatted(.number.precision(.fractionLength(0...1)))) kg × \(best.bestReps)")
@@ -74,7 +79,7 @@ struct ExerciseProgressDetailView: View {
                                     .font(.caption)
                                     .foregroundStyle(.yellow)
                             }
-                            Text("\(Int(point.estimatedOneRepMax.rounded())) kg")
+                            Text("\(Int(point.value.rounded())) kg")
                                 .monospacedDigit()
                         }
                     }

@@ -47,20 +47,8 @@ struct ContentView: View {
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
 
-                Divider()
-
-                // Connection diagnostics (temporary — helps debug the sim link).
-                Text(manager.status)
-                    .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
                 Button("Reload") { manager.reload() }
-
-                Divider()
-                Text("Load demo").font(.caption2).foregroundStyle(.secondary)
-                Button("Strength") { manager.loadDemoStrength() }
-                Button("Circuit") { manager.loadDemoCircuit() }
-                Button("AMRAP") { manager.loadDemoAMRAP() }
+                    .padding(.top, 4)
             }
             .font(.caption)
             .padding(.horizontal, 6)

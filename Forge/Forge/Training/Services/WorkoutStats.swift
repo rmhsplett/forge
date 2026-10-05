@@ -41,8 +41,11 @@ extension WorkoutSession {
     }
 
     /// Total training volume in kg: Σ (weight × reps) over completed sets.
+    /// Tonnage = actual weight moved × reps, summed over completed sets. Uses
+    /// the effective (real total) weight, so a barbell logged per side counts
+    /// the full bar, not the per-side number.
     var totalVolumeKg: Double {
-        completedSets.reduce(0) { $0 + $1.weightKg * Double($1.reps) }
+        completedSets.reduce(0) { $0 + $1.effectiveWeightKg * Double($1.reps) }
     }
 
     /// Formatted duration like "48 min" (or seconds for very short ones);

@@ -1186,6 +1186,38 @@
         8
       ],
       "notes": null
+    },
+    {
+      "id": "running",
+      "name": "Running",
+      "primaryMuscle": "legs",
+      "secondaryMuscles": [],
+      "displayType": "running",
+      "isUnilateral": false,
+      "defaultRestSeconds": 60,
+      "progressionIncrementKg": 0.0,
+      "barWeightKg": null,
+      "defaultRepRange": [
+        400,
+        400
+      ],
+      "notes": null
+    },
+    {
+      "id": "sprint",
+      "name": "Sprint",
+      "primaryMuscle": "legs",
+      "secondaryMuscles": [],
+      "displayType": "sprint",
+      "isUnilateral": false,
+      "defaultRestSeconds": 60,
+      "progressionIncrementKg": 0.0,
+      "barWeightKg": null,
+      "defaultRepRange": [
+        100,
+        100
+      ],
+      "notes": null
     }
   ]
 }

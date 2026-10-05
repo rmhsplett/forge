@@ -1,5 +1,7 @@
 import SwiftUI
 import SwiftData
+import Combine
+import UIKit
 
 /// The live logging screen. Shows each exercise in the session with its
 /// sets; the user fills in weight/reps and checks sets off, then taps Finish.
@@ -21,7 +23,7 @@ struct WorkoutSessionView: View {
             ForEach(sortedExercises) { logged in
                 Section {
                     ForEach(sortedSets(of: logged)) { set in
-                        LoggedSetRow(set: set, onComplete: { startRest(for: set) })
+                        LoggedSetRow(set: set, onComplete: { completeSet(set, in: logged) })
                     }
                     Button {
                         WorkoutSessionBuilder.addSet(to: logged, in: context)
@@ -54,9 +56,22 @@ struct WorkoutSessionView: View {
                 }
                 .bold()
             }
+            // Number pads have no return key, so give the keyboard an explicit
+            // dismiss button (top-right above the keyboard).
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button {
+                    dismissKeyboard()
+                } label: {
+                    Image(systemName: "keyboard.chevron.compact.down")
+                }
+            }
         }
         .onDisappear { restTimer.stop() }
         .safeAreaInset(edge: .bottom) { timerBar }
+        .onReceive(PhoneSessionManager.shared.incomingEvents) { event in
+            applyFromWatch(event)
+        }
     }
 
     /// Bottom bar: session elapsed time (always) + rest countdown when active.
@@ -71,7 +86,10 @@ struct WorkoutSessionView: View {
                 Label(hms(restTimer.secondsRemaining), systemImage: "timer")
                     .monospacedDigit()
                     .foregroundStyle(.orange)
-                Button("Skip") { restTimer.stop() }
+                Button("Skip") {
+                    restTimer.stop()
+                    PhoneSessionManager.shared.send(WorkoutSyncEvent(kind: .restSkipped, source: "phone"))
+                }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
             }
@@ -82,12 +100,58 @@ struct WorkoutSessionView: View {
         .background(.ultraThinMaterial)
     }
 
-    /// Starts the rest countdown after a set is completed, using the
-    /// compound/isolation duration from Settings.
-    private func startRest(for set: LoggedSet) {
-        let compound = set.loggedExercise?.exercise?.isCompound ?? true
+    /// User checked a set off ON THE PHONE: start rest locally and tell the
+    /// watch to tick the same box and run the same rest (with a haptic at the
+    /// end). The set's weight/reps are whatever the user has entered/pre-filled.
+    private func completeSet(_ set: LoggedSet, in logged: LoggedExercise) {
+        let seconds = restSeconds(for: set)
         restTimer.onFinish = {}
-        restTimer.start(seconds: compound ? compoundRest : isolationRest)
+        restTimer.start(seconds: seconds)
+        let exIdx = sortedExercises.firstIndex { $0 === logged } ?? 0
+        let setIdx = sortedSets(of: logged).firstIndex { $0 === set } ?? 0
+        PhoneSessionManager.shared.send(
+            WorkoutSyncEvent(kind: .setCompleted, exerciseIndex: exIdx,
+                             setIndex: setIdx, seconds: seconds, source: "phone")
+        )
+    }
+
+    /// Dismisses the number pad (which has no return key of its own).
+    private func dismissKeyboard() {
+        UIApplication.shared.sendAction(
+            #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+
+    /// Rest duration for a set, per the compound/isolation setting.
+    private func restSeconds(for set: LoggedSet) -> Int {
+        let compound = set.loggedExercise?.exercise?.isCompound ?? true
+        return compound ? compoundRest : isolationRest
+    }
+
+    /// Applies a live event that came FROM the watch: a set checked off on the
+    /// wrist marks that set complete here (at its pre-filled suggested weight —
+    /// adjust it afterward) and starts rest; a skip clears rest. Never
+    /// re-broadcasts, so there's no echo back to the watch.
+    private func applyFromWatch(_ event: WorkoutSyncEvent) {
+        switch event.kind {
+        case .setCompleted:
+            if let ex = event.exerciseIndex, ex < sortedExercises.count {
+                let sets = sortedSets(of: sortedExercises[ex])
+                if let si = event.setIndex, si < sets.count {
+                    let set = sets[si]
+                    if !set.isCompleted {
+                        set.isCompleted = true
+                        set.completedAt = .now
+                        try? context.save()
+                    }
+                }
+            }
+            restTimer.onFinish = {}
+            restTimer.start(seconds: event.seconds ?? isolationRest)
+        case .restSkipped:
+            restTimer.stop()
+        case .roundCompleted:
+            break   // conditioning-only; handled by ConditioningSessionView
+        }
     }
 
     private func elapsed(_ now: Date) -> String {
@@ -117,6 +181,20 @@ private struct LoggedSetRow: View {
     @Bindable var set: LoggedSet
     var onComplete: () -> Void = {}
     @Environment(\.modelContext) private var context
+
+    /// Which cell's long-press wheel is open (nil = none).
+    @State private var wheel: WheelTarget?
+    private enum WheelTarget: Int, Identifiable { case weight, reps; var id: Int { rawValue } }
+
+    /// Bridges the Int reps to the wheel's Double values.
+    private var repsAsDouble: Binding<Double> {
+        Binding(get: { Double(set.reps) }, set: { set.reps = Int($0.rounded()) })
+    }
+
+    private func resignKeyboard() {
+        UIApplication.shared.sendAction(
+            #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
 
     var body: some View {
         HStack(spacing: 12) {
@@ -156,6 +234,9 @@ private struct LoggedSetRow: View {
                     .keyboardType(.decimalPad)
                     .multilineTextAlignment(.trailing)
                     .frame(width: 56)
+                    .simultaneousGesture(LongPressGesture(minimumDuration: 0.4).onEnded { _ in
+                        resignKeyboard(); wheel = .weight
+                    })
                 // Long-press "kg" to log an assistance band (e.g. banded chin-ups).
                 Text("kg")
                     .font(.caption)
@@ -175,6 +256,9 @@ private struct LoggedSetRow: View {
                     .keyboardType(.numberPad)
                     .multilineTextAlignment(.trailing)
                     .frame(width: 40)
+                    .simultaneousGesture(LongPressGesture(minimumDuration: 0.4).onEnded { _ in
+                        resignKeyboard(); wheel = .reps
+                    })
                 Text("reps").font(.caption).foregroundStyle(.secondary)
             }
 
@@ -192,6 +276,18 @@ private struct LoggedSetRow: View {
             .buttonStyle(.plain)
         }
         .textFieldStyle(.roundedBorder)
+        .sheet(item: $wheel) { target in
+            switch target {
+            case .weight:
+                WheelPickerSheet(title: "Weight", unit: "kg",
+                                 values: Array(stride(from: 0.0, through: 300.0, by: 0.5)),
+                                 fractionDigits: 1, value: $set.weightKg)
+            case .reps:
+                WheelPickerSheet(title: "Reps", unit: "",
+                                 values: Array(stride(from: 0.0, through: 60.0, by: 1.0)),
+                                 fractionDigits: 0, value: repsAsDouble)
+            }
+        }
     }
 
     /// Sets the side for this row. When a `both` set is switched to Left or
@@ -252,6 +348,47 @@ private struct LoggedSetRow: View {
         case .purple: return .purple
         case .black: return .primary
         case .green: return .green
+        }
+    }
+}
+
+/// A spinning number wheel for weight/reps, shown on long-press of a cell. Opens
+/// on the value that's already in the field; the keyboard tap-to-type path is
+/// unchanged. Applies the chosen value on Done.
+private struct WheelPickerSheet: View {
+    let title: String
+    let unit: String
+    let values: [Double]
+    let fractionDigits: Int
+    @Binding var value: Double
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var selection: Double = 0
+
+    var body: some View {
+        NavigationStack {
+            Picker("", selection: $selection) {
+                ForEach(values, id: \.self) { v in
+                    Text(unit.isEmpty
+                         ? v.formatted(.number.precision(.fractionLength(fractionDigits)))
+                         : "\(v.formatted(.number.precision(.fractionLength(fractionDigits)))) \(unit)")
+                        .tag(v)
+                }
+            }
+            .pickerStyle(.wheel)
+            .labelsHidden()
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { value = selection; dismiss() }
+                }
+            }
+        }
+        .presentationDetents([.height(260)])
+        .onAppear {
+            // Start on the value already in the field (snapped to the nearest step).
+            selection = values.min(by: { abs($0 - value) < abs($1 - value) }) ?? (values.first ?? 0)
         }
     }
 }

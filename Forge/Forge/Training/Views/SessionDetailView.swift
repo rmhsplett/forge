@@ -45,7 +45,7 @@ struct SessionDetailView: View {
                                             .font(.caption2)
                                             .foregroundStyle(.secondary)
                                     }
-                                    Text("\(set.weightKg.formatted(.number.precision(.fractionLength(0...1)))) kg × \(set.reps)")
+                                    Text("\(set.effectiveWeightKg.formatted(.number.precision(.fractionLength(0...1)))) kg × \(set.reps)")
                                         .monospacedDigit()
                                 }
                             } else {

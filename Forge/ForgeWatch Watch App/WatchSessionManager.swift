@@ -19,6 +19,10 @@ final class WatchSessionManager: NSObject, ObservableObject {
     @Published var workout: WatchWorkout?
     @Published var status: String = "Connecting…"
 
+    /// Live in-workout events received from the phone (set checked off / rest
+    /// skipped). The workout view subscribes to apply them on the wrist.
+    let incomingEvents = PassthroughSubject<WorkoutSyncEvent, Never>()
+
     private override init() {
         super.init()
         activate()
@@ -44,55 +48,31 @@ final class WatchSessionManager: NSObject, ObservableObject {
         WCSession.default.transferUserInfo(["result": data])
     }
 
+    /// Sends a live workout event to the phone — instantly when reachable,
+    /// otherwise queued (transferUserInfo) so it still arrives.
+    func send(_ event: WorkoutSyncEvent) {
+        guard WCSession.default.activationState == .activated,
+              let data = try? JSONEncoder().encode(event) else { return }
+        let payload = ["event": data]
+        if WCSession.default.isReachable {
+            WCSession.default.sendMessage(payload, replyHandler: nil) { _ in
+                WCSession.default.transferUserInfo(payload)
+            }
+        } else {
+            WCSession.default.transferUserInfo(payload)
+        }
+    }
+
+    /// Decodes and republishes a live event coming from the phone.
+    private func handleEvent(_ payload: [String: Any]) {
+        guard let data = payload["event"] as? Data,
+              let event = try? JSONDecoder().decode(WorkoutSyncEvent.self, from: data) else { return }
+        DispatchQueue.main.async { [weak self] in self?.incomingEvents.send(event) }
+    }
+
     /// Clears the current workout (back to the idle screen).
     func clear() {
         workout = nil
-    }
-
-    // Development scaffolds: sample workouts so the watch UI can be built and
-    // demoed without a live phone link (the simulator's WatchConnectivity is
-    // unreliable). On a real device the real workout arrives from the phone.
-
-    func loadDemoStrength() {
-        workout = WatchWorkout(
-            title: "Demo · Upper A",
-            format: "strength",
-            exercises: [
-                WatchExercise(name: "Incline Barbell Press", targetSets: 4, repLow: 5, repHigh: 7),
-                WatchExercise(name: "Weighted Pull-Ups", targetSets: 4, repLow: 5, repHigh: 7),
-                WatchExercise(name: "Chest Supported Row", targetSets: 2, repLow: 8, repHigh: 10),
-                WatchExercise(name: "Cable Lateral Raise", targetSets: 3, repLow: 12, repHigh: 15)
-            ],
-            rounds: 0, restSeconds: 0, timeCapSeconds: 0
-        )
-    }
-
-    func loadDemoCircuit() {
-        workout = WatchWorkout(
-            title: "Demo · KB Circuit",
-            format: "circuit",
-            exercises: [
-                WatchExercise(name: "KB Swing", targetSets: 1, repLow: 20, repHigh: 20),
-                WatchExercise(name: "Turkish Get-Up", targetSets: 1, repLow: 10, repHigh: 10),
-                WatchExercise(name: "KB Clean & Press", targetSets: 1, repLow: 15, repHigh: 15),
-                WatchExercise(name: "KB Row", targetSets: 1, repLow: 20, repHigh: 20),
-                WatchExercise(name: "Goblet Squat", targetSets: 1, repLow: 12, repHigh: 12)
-            ],
-            rounds: 4, restSeconds: 30, timeCapSeconds: 0   // 30s rest for quick testing
-        )
-    }
-
-    func loadDemoAMRAP() {
-        workout = WatchWorkout(
-            title: "Demo · AMRAP",
-            format: "amrap",
-            exercises: [
-                WatchExercise(name: "KB Swing", targetSets: 1, repLow: 10, repHigh: 10),
-                WatchExercise(name: "Goblet Squat", targetSets: 1, repLow: 10, repHigh: 10),
-                WatchExercise(name: "Push-Up", targetSets: 1, repLow: 8, repHigh: 8)
-            ],
-            rounds: 0, restSeconds: 0, timeCapSeconds: 60   // 60s cap for quick testing
-        )
     }
 
     private func refreshStatus() {
@@ -126,7 +106,12 @@ extension WatchSessionManager: WCSessionDelegate {
         refreshStatus()
     }
 
+    func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
+        handleEvent(message)
+    }
+
     func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any] = [:]) {
+        handleEvent(userInfo)
         apply(userInfo)
         refreshStatus()
     }

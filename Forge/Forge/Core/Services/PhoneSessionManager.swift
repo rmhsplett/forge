@@ -9,6 +9,7 @@
 //
 
 import Foundation
+import Combine
 import WatchConnectivity
 
 final class PhoneSessionManager: NSObject {
@@ -17,6 +18,10 @@ final class PhoneSessionManager: NSObject {
 
     /// The session currently being driven (so a watch result can be applied to it).
     weak var activeSession: WorkoutSession?
+
+    /// Live in-workout events received from the watch (set checked off, rest
+    /// skipped). The active logging view subscribes to apply them.
+    let incomingEvents = PassthroughSubject<WorkoutSyncEvent, Never>()
 
     private override init() {
         super.init()
@@ -44,6 +49,29 @@ final class PhoneSessionManager: NSObject {
         WCSession.default.transferUserInfo(["workout": data])
     }
 
+    /// Sends a live workout event to the watch — instantly when the watch app
+    /// is reachable, otherwise queued (transferUserInfo) so it still arrives.
+    func send(_ event: WorkoutSyncEvent) {
+        guard WCSession.isSupported(),
+              WCSession.default.activationState == .activated,
+              let data = try? JSONEncoder().encode(event) else { return }
+        let payload = ["event": data]
+        if WCSession.default.isReachable {
+            WCSession.default.sendMessage(payload, replyHandler: nil) { _ in
+                WCSession.default.transferUserInfo(payload)   // fallback on failure
+            }
+        } else {
+            WCSession.default.transferUserInfo(payload)
+        }
+    }
+
+    /// Decodes and republishes a live event coming from the watch.
+    private func handleEvent(_ payload: [String: Any]) {
+        guard let data = payload["event"] as? Data,
+              let event = try? JSONDecoder().decode(WorkoutSyncEvent.self, from: data) else { return }
+        DispatchQueue.main.async { [weak self] in self?.incomingEvents.send(event) }
+    }
+
     /// Builds a watch snapshot from a live session.
     static func makeWorkout(from session: WorkoutSession) -> WatchWorkout {
         let day = session.programDay
@@ -62,7 +90,8 @@ final class PhoneSessionManager: NSObject {
                         name: $0.exercise?.name ?? "Exercise",
                         targetSets: 1,
                         repLow: $0.repRangeLow,
-                        repHigh: $0.repRangeLow
+                        repHigh: $0.repRangeLow,
+                        isCardio: $0.exercise?.displayType.isCardio ?? false
                     )
                 }
         } else {
@@ -96,8 +125,15 @@ extension PhoneSessionManager: WCSessionDelegate {
     func sessionDidBecomeInactive(_ session: WCSession) {}
     func sessionDidDeactivate(_ session: WCSession) { session.activate() }
 
-    /// Result coming back from the watch when a workout finishes there.
+    /// Live event from the watch while a workout is active (sendMessage path).
+    func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
+        handleEvent(message)
+    }
+
+    /// Result coming back from the watch when a workout finishes there — and
+    /// the queued-fallback path for live events.
     func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any] = [:]) {
+        handleEvent(userInfo)
         guard let data = userInfo["result"] as? Data,
               let result = try? JSONDecoder().decode(WatchResult.self, from: data) else { return }
         DispatchQueue.main.async { [weak self] in

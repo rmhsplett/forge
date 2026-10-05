@@ -51,6 +51,8 @@ enum ExerciseDisplayType: String, Codable, CaseIterable {
     case bandAssisted
     case bodyweightPlusLoad
     case kettlebell
+    case running
+    case sprint
 
     /// Human-friendly label for pickers (rawValue has camelCase we don't want
     /// to show).
@@ -64,6 +66,8 @@ enum ExerciseDisplayType: String, Codable, CaseIterable {
         case .bandAssisted: return "Band-assisted"
         case .bodyweightPlusLoad: return "Bodyweight + load"
         case .kettlebell: return "Kettlebell"
+        case .running: return "Running"
+        case .sprint: return "Sprint"
         }
     }
 
@@ -79,6 +83,17 @@ enum ExerciseDisplayType: String, Codable, CaseIterable {
         case .bandAssisted: return "figure.flexibility"
         case .bodyweightPlusLoad: return "figure.strengthtraining.traditional"
         case .kettlebell: return "figure.cross.training"
+        case .running: return "figure.run"
+        case .sprint: return "figure.run"   // ExerciseIconView adds motion stripes
+        }
+    }
+
+    /// Cardio movements (Running / Sprint) — logged by distance, not weight ×
+    /// reps, and excluded from strength stats.
+    var isCardio: Bool {
+        switch self {
+        case .running, .sprint: return true
+        default: return false
         }
     }
 }

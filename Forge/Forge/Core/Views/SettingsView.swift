@@ -14,6 +14,8 @@ struct SettingsView: View {
     @AppStorage("autoSuggestEnabled") private var autoSuggestEnabled = true
     @AppStorage("compoundRestSeconds") private var compoundRest = 120
     @AppStorage("isolationRestSeconds") private var isolationRest = 90
+    @AppStorage("progressMetric") private var progressMetric = ProgressMetric.e1rm.rawValue
+    @AppStorage("barbellCombined") private var barbellCombined = false
     @AppStorage(ThemeStorage.accentKey) private var accentRaw = AccentTheme.blue.rawValue
     @AppStorage(ThemeStorage.fontKey) private var fontRaw = AppFontDesign.standard.rawValue
     @AppStorage(BackgroundStore.hasImageKey) private var hasBackground = false
@@ -42,6 +44,22 @@ struct SettingsView: View {
                     Text("Rest timer")
                 } footer: {
                     Text("Starts automatically when you complete a set. Multi-joint lifts use the compound time; single-joint moves use the isolation time.")
+                }
+
+                Section {
+                    Picker("Progress metric", selection: $progressMetric) {
+                        ForEach(ProgressMetric.allCases) { metric in
+                            Text(metric.label).tag(metric.rawValue)
+                        }
+                    }
+                    Picker("Barbell weight", selection: $barbellCombined) {
+                        Text("Per side").tag(false)
+                        Text("Total").tag(true)
+                    }
+                } header: {
+                    Text("Progress & logging")
+                } footer: {
+                    Text("Progress metric sets what the charts plot. Barbell weight sets how you enter loads: “Per side” counts weight × 2 + bar as the real total; “Total” takes the full weight as typed. Changing it only affects new workouts — past sessions keep how they were logged.")
                 }
 
                 if HealthKitService.isAvailable {

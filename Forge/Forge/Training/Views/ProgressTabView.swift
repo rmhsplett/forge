@@ -9,10 +9,14 @@ struct ProgressTabView: View {
 
     @Query(sort: \Exercise.name) private var exercises: [Exercise]
 
+    // Re-render the list when the progress metric is switched in Settings.
+    @AppStorage("progressMetric") private var metricRaw = ProgressMetric.e1rm.rawValue
+    private var metric: ProgressMetric { ProgressMetric(rawValue: metricRaw) ?? .e1rm }
+
     /// Only exercises with logged history, newest-trained first.
     private var loggedLifts: [(exercise: Exercise, series: [ProgressPoint])] {
         exercises.compactMap { exercise in
-            let series = ExerciseProgress.series(for: exercise)
+            let series = ExerciseProgress.series(for: exercise, metric: metric)
             return series.isEmpty ? nil : (exercise: exercise, series: series)
         }
         .sorted { ($0.series.last?.date ?? .distantPast) > ($1.series.last?.date ?? .distantPast) }
@@ -52,7 +56,7 @@ private struct ProgressLiftRow: View {
     let exercise: Exercise
     let series: [ProgressPoint]
 
-    private var bestE1RM: Double { series.map(\.estimatedOneRepMax).max() ?? 0 }
+    private var bestValue: Double { series.map(\.value).max() ?? 0 }
 
     var body: some View {
         HStack {
@@ -65,7 +69,7 @@ private struct ProgressLiftRow: View {
                 Image(systemName: "trophy.fill")
                     .font(.caption)
                     .foregroundStyle(.yellow)
-                Text("\(Int(bestE1RM.rounded())) kg")
+                Text("\(Int(bestValue.rounded())) kg")
                     .font(.headline.weight(.bold))
                     .monospacedDigit()
             }
@@ -91,7 +95,7 @@ private struct ProgressLiftRow: View {
     }
 
     private var bestSetCaption: String {
-        guard let best = series.max(by: { $0.estimatedOneRepMax < $1.estimatedOneRepMax }) else { return "—" }
+        guard let best = series.max(by: { $0.value < $1.value }) else { return "—" }
         return "\(best.bestWeightKg.formatted(.number.precision(.fractionLength(0...1)))) kg × \(best.bestReps)"
     }
 }

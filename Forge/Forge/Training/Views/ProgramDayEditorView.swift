@@ -157,9 +157,16 @@ private struct ProgramExerciseEditRow: View {
                 .font(.headline)
 
             if isConditioning {
-                // Circuit / AMRAP: just reps per round, no sets, no range.
-                Stepper("Reps: \(programExercise.repRangeLow)", value: singleReps, in: 1...100)
-                    .font(.subheadline)
+                if programExercise.exercise?.displayType.isCardio == true {
+                    // Cardio: a distance in metres (stored in the rep value).
+                    Stepper("Distance: \(programExercise.repRangeLow) m",
+                            value: singleReps, in: 50...10000, step: 50)
+                        .font(.subheadline)
+                } else {
+                    // Circuit / AMRAP: just reps per round, no sets, no range.
+                    Stepper("Reps: \(programExercise.repRangeLow)", value: singleReps, in: 1...100)
+                        .font(.subheadline)
+                }
             } else {
                 // Strength: sets + a rep range for progressive overload.
                 Stepper("Sets: \(programExercise.targetSets)",

@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import Combine
 
 /// Live logger for conditioning workouts (Circuit and AMRAP). Shows the round's
 /// exercises and a big timer/counter; the same "done" button that will live on
@@ -34,7 +35,9 @@ struct ConditioningSessionView: View {
                     HStack {
                         Text(pe.exercise?.name ?? "Exercise")
                         Spacer()
-                        Text("\(pe.repRangeLow) reps")
+                        Text(pe.exercise?.displayType.isCardio == true
+                             ? "\(pe.repRangeLow) m"
+                             : "\(pe.repRangeLow) reps")
                             .foregroundStyle(.secondary)
                             .monospacedDigit()
                     }
@@ -56,6 +59,9 @@ struct ConditioningSessionView: View {
             if session.format == .amrap { startAMRAP() }
         }
         .onDisappear { timer.stop() }
+        .onReceive(PhoneSessionManager.shared.incomingEvents) { event in
+            applyFromWatch(event)
+        }
     }
 
     // MARK: Header (timer + the "done" button)
@@ -71,6 +77,8 @@ struct ConditioningSessionView: View {
                     .font(.headline)
                 Button {
                     completedRounds += 1
+                    PhoneSessionManager.shared.send(
+                        WorkoutSyncEvent(kind: .roundCompleted, rounds: completedRounds, source: "phone"))
                 } label: {
                     Label("+1 Round", systemImage: "plus.circle.fill")
                         .font(.title3)
@@ -88,7 +96,7 @@ struct ConditioningSessionView: View {
                         .font(.system(size: 48, weight: .bold, design: .rounded))
                         .monospacedDigit()
                     Text("Rest").foregroundStyle(.secondary)
-                    Button("Skip rest") { endRest() }
+                    Button("Skip rest") { skipRest() }
                         .font(.subheadline)
                 } else {
                     Button {
@@ -108,6 +116,9 @@ struct ConditioningSessionView: View {
 
     private func roundDone() {
         completedRounds += 1
+        PhoneSessionManager.shared.send(
+            WorkoutSyncEvent(kind: .roundCompleted, seconds: day?.restBetweenRoundsSeconds ?? 60,
+                             rounds: completedRounds, source: "phone"))
         if completedRounds >= totalRounds {
             finish()
         } else {
@@ -120,6 +131,35 @@ struct ConditioningSessionView: View {
     private func endRest() {
         timer.stop()
         resting = false
+    }
+
+    /// Skip rest on the phone and clear it on the watch too.
+    private func skipRest() {
+        endRest()
+        PhoneSessionManager.shared.send(WorkoutSyncEvent(kind: .restSkipped, source: "phone"))
+    }
+
+    /// Applies a live event from the watch: a round finished on the wrist bumps
+    /// the round count here (and starts between-rounds rest for circuits, or
+    /// finishes on the last round); a skip clears rest. Never re-broadcasts.
+    private func applyFromWatch(_ event: WorkoutSyncEvent) {
+        switch event.kind {
+        case .roundCompleted:
+            if let r = event.rounds { completedRounds = r }
+            if session.format != .amrap {
+                if completedRounds >= totalRounds {
+                    finish()
+                } else {
+                    resting = true
+                    timer.onFinish = { endRest() }
+                    timer.start(seconds: event.seconds ?? day?.restBetweenRoundsSeconds ?? 60)
+                }
+            }
+        case .restSkipped:
+            endRest()
+        case .setCompleted:
+            break   // strength-only
+        }
     }
 
     private func startAMRAP() {

@@ -15,12 +15,44 @@ struct ExerciseIconView: View {
             KettlebellGlyph(color: color)
         case .cable:
             CableTowerGlyph(color: color)
+        case .sprint:
+            SprintGlyph(color: color)
         default:
             Image(systemName: displayType.symbolName)
                 .resizable()
                 .scaledToFit()
                 .foregroundStyle(color)
                 .padding(1)
+        }
+    }
+}
+
+/// Sprint: the running figure (SF Symbol) with three speed stripes trailing
+/// behind it to the left — distinguishes it from steady-state Running.
+private struct SprintGlyph: View {
+    var color: Color = .secondary
+
+    var body: some View {
+        GeometryReader { geo in
+            let s = min(geo.size.width, geo.size.height)
+            ZStack(alignment: .leading) {
+                // Motion stripes behind the runner.
+                VStack(alignment: .leading, spacing: s * 0.12) {
+                    Capsule().frame(width: s * 0.46, height: s * 0.09)
+                    Capsule().frame(width: s * 0.62, height: s * 0.09)
+                    Capsule().frame(width: s * 0.34, height: s * 0.09)
+                }
+                .foregroundStyle(color)
+                .offset(y: s * 0.03)
+
+                Image(systemName: "figure.run")
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundStyle(color)
+                    .frame(width: s * 0.74, height: s * 0.74)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+            .frame(width: geo.size.width, height: geo.size.height, alignment: .center)
         }
     }
 }
